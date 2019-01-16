@@ -1,0 +1,82 @@
+<div class="quad-grid-container">
+
+  <mat-card>
+    <mat-card-title>
+      LZMA - Dictionary
+      <div class="mat-card-fix-title-button-container align-center">
+        <div class="mat-card-fix-align-right">
+          <img src="../../../../assets/logo-7zipclassiclzma.svg" class="title-image-height"/>
+        </div>
+      </div>
+    </mat-card-title>
+    <mat-card-content class="card-big-font">
+      <ul>
+        <li>Compresses <i>Shakespeare's</i> works to 28% size</li>
+        <li><img src="../../../../assets/logo-7zip.svg" class="bullet-image-height"/></li>
+        <li>High compression ratio</li>
+        <li>Uses a dictionary compression scheme</li>
+      </ul>
+    </mat-card-content>
+
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>
+      GZIP - HTTP compression
+      <div class="mat-card-fix-title-button-container align-center">
+        <div class="mat-card-fix-align-right">
+          <img src="../../../../assets/logo-gzip3d.png" class="title-image-height"/>
+        </div>
+      </div>
+    </mat-card-title>
+    <mat-card-content class="card-big-font">
+      <ul>
+        <li>Compresses <i>Shakespeare's</i> works to 39% size</li>
+        <li><img src="../../../../assets/logo-gnu.png" class="bullet-image-height"/></li>
+        <li>Used in HTTP compression, to speed up sending HTML</li>
+        <li>Combination of <i>LZW</i> and <i>Huffman coding</i></li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="cursor-pointer hover-bright"
+       (click)="openJpegDialog()">
+    <mat-card>
+      <mat-card-title>
+        JPEG - Discrete Cosine Transforms
+        <div class="mat-card-fix-title-button-container align-center">
+          <div class="mat-card-fix-align-right">
+            <img src="../../../../assets/logo-jpeg.png" class="title-image-height"/>
+          </div>
+        </div>
+      </mat-card-title>
+      <mat-card-content>
+        <div class="image-zoom-container">
+          <img src="../../../../assets/lenna-example.jpg" class="example-image"/>
+          <img src="../../../../assets/lenna-compressed.jpg" class="example-image"/>
+          <img src="../../../../assets/lenna-super-compressed.jpg" class="example-image"/>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="cursor-pointer hover-bright"
+       (click)="openKeyframesDialog()">
+    <mat-card>
+      <mat-card-title>
+        MPEG - Keyframes
+        <div class="mat-card-fix-title-button-container align-center">
+          <div class="mat-card-fix-align-right">
+            <img src="../../../../assets/logo-mpeg.png" class="title-image-height"/>
+          </div>
+        </div>
+      </mat-card-title>
+      <mat-card-content class="card-big-font">
+        <div class="image-center">
+          <img src="../../../../assets/keyframes-example.jpg" class="example-image"/>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>

@@ -1,0 +1,66 @@
+@import '../../../../styles';
+
+.pixels-container {
+  display: grid;
+  grid-template-columns: repeat(17, 1fr);
+  grid-template-rows: repeat(17, 1fr);
+  grid-gap: 1px;
+
+  .pixels-item {
+  }
+}
+
+.pixel-color {
+  width: 32px;
+  height: 32px;
+  outline: 1px solid lightgreen;
+}
+
+.pixels-on {
+  background-color: dimgrey;
+}
+
+.pixels-off {
+  background-color: whitesmoke;
+}
+
+.pixels-highlight {
+  outline: 1px solid green;
+  background-color: greenyellow;
+}
+
+.pixels-encoded-card-size {
+  width: 75% !important;
+}
+
+.pixels-font {
+  font-size: 2.4em;
+}
+
+.pixels-text-scale {
+  //transform: scale(2, 1);
+  display: inline-block;
+  //margin-right: 32px;
+  margin-right: 4px;
+}
+
+.pixels-encoded-card-padding {
+  padding-left: 16px;
+}
+
+@media #{$mediaQ-small-desktop} {
+  .pixels-container {
+    grid-template-columns: repeat(17, 25px);
+    grid-template-rows: repeat(17, 25px);
+  }
+}
+
+.fadeable {
+  transition: 1s ease-in-out;
+  transition-property: opacity;
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+}

@@ -1,0 +1,18 @@
+.font-size-extra-large {
+  font-size: 4em;
+}
+
+.mat-card-remove-box {
+  box-shadow: unset;
+  padding: unset;
+}
+
+.align-text-center {
+  text-align: center;
+}
+
+::ng-deep {
+  mat-dialog-content {
+    overflow: hidden !important;
+  }
+}

@@ -1,0 +1,81 @@
+<div class="screen-container">
+
+  <div>
+    <h1>Welcome to EC prototype 2016</h1>
+    <h4>Round {{mapConfig.round}}</h4>
+    <h4>Player {{playerOnTurn.name}}, move it!</h4>
+    <br>
+
+    <div *ngFor="let p of players">
+      <div class="player-details-container">
+        <span>{{p.name}}<span *ngIf="playerOnTurn === p"><mat-icon class="hot">notification_important</mat-icon></span></span>
+        <span> <mat-icon>local_hospital</mat-icon>{{p.hitPoints}} </span>
+        <span> <mat-icon>monetization_on</mat-icon>{{p.resources}} </span>
+        <span> <mat-icon>score</mat-icon>{{p.score}} </span>
+        <span [ngClass]="p.activeEffect?.type">{{p.activeEffect?.type}} </span>
+        <span> <mat-icon>access_time</mat-icon>{{p.activeEffect?.timeLeft}} </span>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <ng-container *ngFor="let row of rows">
+      <ng-container *ngFor="let cell of row.columns">
+
+        <div class="cell-container"
+             [class.hover-action-clickable]="cell.isActionable">
+
+          <div *ngIf="cell.isActionable"
+               class="square overlap"
+               [matMenuTriggerFor]="actionsMenu"
+               style="z-index: 4">
+            * <!--action marker-->
+            <mat-menu #actionsMenu="matMenu">
+              <button *ngIf="cell.surfaceType === surfaceTypeEnum.AIR"
+                      mat-menu-item
+                      (click)="doPlayerAction(cell, actionsEnum.MOVE)">Move here
+              </button>
+
+              <button *ngIf="cell.surfaceType !== surfaceTypeEnum.AIR"
+                      mat-menu-item
+                      (click)="doPlayerAction(cell, actionsEnum.HEAT)">Heat this block
+              </button>
+
+              <button *ngIf="cell.surfaceType !== surfaceTypeEnum.AIR"
+                      mat-menu-item
+                      (click)="doPlayerAction(cell, actionsEnum.FREEZE)">Freeze this block
+              </button>
+
+              <button *ngIf="cell.surfaceType !== surfaceTypeEnum.AIR"
+                      mat-menu-item
+                      (click)="doPlayerAction(cell, actionsEnum.SPILL_OIL)">Spill oil on this block
+              </button>
+            </mat-menu>
+          </div>
+
+          <div class="square overlap"
+               [ngClass]="cell?.activeEffect?.type"
+               style="z-index: 3"></div>
+
+          <img *ngIf="cell.occupier"
+               class="occupant overlap"
+               [class.on-turn]="cell.occupier === playerOnTurn"
+               style="z-index: 2"
+               [title]="'Player ' + cell.occupier.name"
+               [src]="'../../../../assets/worm' + ((cell.occupier.id-1) % 2+1) + '.png'"/>
+
+
+          <div class="square overlap"
+               [ngClass]="cell.surfaceType"
+               style="z-index: 1">
+            <!--<br>{{cell.x}},{{cell.y}}-->
+          </div>
+        </div>
+
+      </ng-container>
+    </ng-container>
+
+
+  </div>
+</div>

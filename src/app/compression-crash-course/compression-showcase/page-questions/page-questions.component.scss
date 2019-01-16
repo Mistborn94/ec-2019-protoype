@@ -1,0 +1,64 @@
+@import '../../../../styles';
+
+.big-font {
+  text-align: center;
+  font-size: 420px;
+}
+
+.rotate-question {
+  animation: spin 5s cubic-bezier(0.6, 0.06, 0.4, 0.94) infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.round-card {
+  border-radius: 50%;
+
+  margin: auto;
+  width: 500px;
+  height: 500px;
+}
+
+@media #{$mediaQ-small-desktop} {
+  .big-font {
+    font-size: 350px;
+  }
+
+  .round-card {
+    border-radius: 50%;
+
+    margin: auto;
+    width: 420px;
+    height: 420px;
+  }
+}
+
+.tri-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.mat-icon-fix-size {
+  font-size: 56px;
+  display: grid;
+  place-content: center center;
+}
+
+.font-size-extra-large {
+  font-size: 4em;
+}
+
+.join-link-container {
+  display: grid;
+}
+
+.center-and-size {
+  width: max-content;
+  height: max-content;
+  justify-self: right;
+  text-align: center;
+}
