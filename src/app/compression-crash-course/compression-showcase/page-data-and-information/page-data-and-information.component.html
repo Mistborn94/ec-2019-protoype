@@ -1,23 +1,34 @@
 <div class="screen-container">
 
   <div>
-    <h1>Welcome to EC prototype 2016</h1>
-    <h4>Round {{mapConfig.round}}</h4>
-    <h4>Player {{playerOnTurn.name}}, move it!</h4>
-    <br>
+    <mat-card>
+      <h1>EC prototype - 2018</h1>
 
-    <div *ngFor="let p of players">
-      <div class="player-details-container">
-        <span>{{p.name}}<span *ngIf="playerOnTurn === p"><mat-icon class="hot">notification_important</mat-icon></span></span>
-        <span> <mat-icon>local_hospital</mat-icon>{{p.hitPoints}} </span>
-        <span> <mat-icon>monetization_on</mat-icon>{{p.resources}} </span>
-        <span> <mat-icon>score</mat-icon>{{p.score}} </span>
-        <span [ngClass]="p.activeEffect?.type">{{p.activeEffect?.type}} </span>
-        <span> <mat-icon>access_time</mat-icon>{{p.activeEffect?.timeLeft}} </span>
+      <mat-button-toggle-group (change)="setMapMode($event)">
+        <mat-button-toggle value="normal" [checked]="true">Earth worms...</mat-button-toggle>
+        <mat-button-toggle value="space">SPACE WORMS!</mat-button-toggle>
+      </mat-button-toggle-group>
+      <mat-spinner style="float: right;" [diameter]="36" [hidden]="!loading"></mat-spinner>
 
+      <h4>Round {{mapConfig.round}}</h4>
+      <h2>Player <b>{{playerOnTurn.name}}</b>, move it!</h2>
+      <br>
+
+      <div *ngFor="let p of players">
+        <div class="player-details-container">
+          <span>{{p.name}}<span *ngIf="playerOnTurn === p"><mat-icon
+            class="hot">notification_important</mat-icon></span></span>
+          <span> <mat-icon>local_hospital</mat-icon>{{p.hitPoints}} </span>
+          <span> <mat-icon>monetization_on</mat-icon>{{p.resources}} </span>
+          <span> <mat-icon>score</mat-icon>{{p.score}} </span>
+          <span [ngClass]="p.activeEffect?.type">{{p.activeEffect?.type}} </span>
+          <span> <mat-icon>access_time</mat-icon>{{p.activeEffect?.timeLeft}} </span>
+
+        </div>
       </div>
-    </div>
+    </mat-card>
   </div>
+
 
   <div class="map-container">
     <ng-container *ngFor="let row of rows">
@@ -29,7 +40,7 @@
           <div *ngIf="cell.isActionable"
                class="square overlap"
                [matMenuTriggerFor]="actionsMenu"
-               style="z-index: 4">
+               style="z-index: 4; color: red">
             * <!--action marker-->
             <mat-menu #actionsMenu="matMenu">
               <button *ngIf="cell.surfaceType === surfaceTypeEnum.AIR"
@@ -69,7 +80,8 @@
           <div class="square overlap"
                [ngClass]="cell.surfaceType"
                style="z-index: 1">
-            <!--<br>{{cell.x}},{{cell.y}}-->
+            <!--{{cell.x}},{{cell.y}}-->
+            <!--{{cell.ipInfo.flag}}-->
           </div>
         </div>
 
