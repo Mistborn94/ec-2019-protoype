@@ -16,7 +16,9 @@ import {
   MatTableModule,
   MatTabsModule,
   MatToolbarModule,
-  MatTooltipModule
+  MatTooltipModule,
+  MatButtonToggleModule,
+  MatProgressSpinnerModule,
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
@@ -51,6 +53,8 @@ import { EndGameDialogComponent } from 'src/app/compression-crash-course/compres
               MatSlideToggleModule,
               MatInputModule,
               MatMenuModule,
+              MatButtonToggleModule,
+              MatProgressSpinnerModule,
             ],
             exports: [
               CommonModule,
@@ -77,6 +81,8 @@ import { EndGameDialogComponent } from 'src/app/compression-crash-course/compres
               WebsiteInfoComponent,
               MatInputModule,
               MatMenuModule,
+              MatButtonToggleModule,
+              MatProgressSpinnerModule,
             ],
             entryComponents: [
               TutorialDialogComponent,
