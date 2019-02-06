@@ -2,17 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import * as SimplexNoise from 'simplex-noise';
 import { EndGameDialogComponent } from 'src/app/compression-crash-course/compression-showcase/page-data-and-information/end-game-dialog/end-game-dialog.component';
+import { generateMapTemplate } from './map-generator';
 
 /**
  * Returns an array of integers in range [0..count]
  * @param count
  * @returns {number[]}
  */
-function intRange(count): number[] {
+export function intRange(count): number[] {
   return [...Array(count).keys()];
 }
 
-function euclideanDistance(a, b): number {
+export function euclideanDistance(a, b): number {
   return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
 }
 
@@ -22,11 +23,11 @@ function euclideanDistance(a, b): number {
  * @param {Function} propertyGetter
  * @returns {T[]}
  */
-function flatMap<T>(array: any[], propertyGetter: Function = x => x): T[] {
+export function flatMap<T>(array: any[], propertyGetter: Function = x => x): T[] {
   return array.reduce((acc, x) => acc.concat(propertyGetter(x)), []);
 }
 
-enum SurfaceTypeEnum {
+export enum SurfaceTypeEnum {
   AIR = 'air',
   SOIL = 'soil',
   WATER = 'water',
@@ -59,7 +60,7 @@ class ActiveEffect {
   timeLeft: number;
 }
 
-class NearCells {
+export class NearCells {
   above: GridsCell;
   below: GridsCell;
   left: GridsCell;
@@ -81,13 +82,13 @@ class NearCells {
   }
 }
 
-class ImageProcessingInfo {
+export class ImageProcessingInfo {
   srcValue: number;
   cookedValue: number;
   flag: number;
 }
 
-class GridsCell {
+export class GridsCell {
   x: number;
   y: number;
   surfaceType: SurfaceTypeEnum;
@@ -97,10 +98,6 @@ class GridsCell {
   isAttackable: boolean;
   nearCells: NearCells = <NearCells>{};
   ipInfo: ImageProcessingInfo = <ImageProcessingInfo>{}; // Image Processing Info, used ONLY during map generation
-
-  // Deprecated
-  cellAboveMe: GridsCell;
-  cellBelowMe: GridsCell;
 }
 
 class GridsRow {
@@ -124,9 +121,9 @@ class BasicGun {
   range = 20;
 }
 
-class MapConfig {
+export class MapConfig {
   xMax = 31;
-  yMax = 15;
+  yMax = 31;
   seed: number = Math.round(Math.random() * 10e15);
   playersCount = 2;
   roundsMax = 400;
@@ -145,7 +142,7 @@ class MapConfig {
 @Component({
   selector: 'app-page-data-and-information',
   templateUrl: './page-data-and-information.component.html',
-  styleUrls: ['./stylings.scss']
+  styleUrls: ['./stylings.scss'],
 })
 export class PageDataAndInformationComponent implements OnInit {
 
@@ -174,7 +171,10 @@ export class PageDataAndInformationComponent implements OnInit {
     switch (action) {
 
       case ActionsEnum.DIG:
-        cell.surfaceType = SurfaceTypeEnum.AIR;
+        cell.surfaceType = SurfaceTypeEnum.SPACE;
+        this.rows[this.playerOnTurn.y].columns[this.playerOnTurn.x].occupier = undefined;
+        this.setPlayerAsOccupier(this.playerOnTurn, cell);
+        break;
 
       case ActionsEnum.MOVE:
         this.rows[this.playerOnTurn.y].columns[this.playerOnTurn.x].occupier = undefined;
@@ -221,7 +221,7 @@ export class PageDataAndInformationComponent implements OnInit {
   public setMapMode(event) {
     this.loading = true;
     setTimeout(() => {
-      this.setupNewGame(event.value === 'space');
+      // this.setupNewGame();
       this.loading = false;
     }, 0);
   }
@@ -250,8 +250,8 @@ export class PageDataAndInformationComponent implements OnInit {
       this.dialog.open(EndGameDialogComponent, {
         data: {
           players: this.players,
-          message: message
-        }
+          message: message,
+        },
       })
         .afterClosed()
         .subscribe();
@@ -287,19 +287,12 @@ export class PageDataAndInformationComponent implements OnInit {
 
   private markPlayersInRangeAsActionable() {
     const activeWeapon = this.playerOnTurn.weapon;
-    this.players.filter(p => p !== this.playerOnTurn)
-      .forEach(
-        p => {
-          if (euclideanDistance(this.playerOnTurn, p) <= activeWeapon.range) {
-            this.rows[p.y].columns[p.x].isAttackable = true;
-          }
-        }
-      );
+    this.players.filter(p => p !== this.playerOnTurn && euclideanDistance(this.playerOnTurn, p) <= activeWeapon.range)
+      .forEach(p => this.rows[p.y].columns[p.x].isAttackable = true);
   }
 
   private markAdjacentCellsAsActionable() {
-    const maskArray = [...Array(3)
-      .keys()]
+    const maskArray = intRange(3)
       .map(i => i - 1)
       .reduce((sum, c, i, a) => {
         sum.push(...a.map(j => ({x: c, y: j})));
@@ -314,9 +307,7 @@ export class PageDataAndInformationComponent implements OnInit {
         return;
       }
       const cellToEnable = this.rows[affectedY].columns[affectedX];
-      if (cellToEnable.occupier
-        || (cellToEnable.surfaceType === SurfaceTypeEnum.AIR && cellToEnable.cellBelowMe.surfaceType === SurfaceTypeEnum.AIR)
-        || (cellToEnable.surfaceType === SurfaceTypeEnum.AIR && p.activeEffect && p.activeEffect.type === EffectsEnum.OIL)) {
+      if (cellToEnable.occupier) {
         return;
       }
       cellToEnable.isActionable = true;
@@ -325,33 +316,33 @@ export class PageDataAndInformationComponent implements OnInit {
 
   private applyCellEffectsToPlayers() {
     this.allCellsRef
-      .filter(cell => cell.cellAboveMe && cell.cellAboveMe.occupier && cell.activeEffect)
+      .filter(cell => cell.occupier && cell.activeEffect)
       .forEach(cell => {
         switch (cell.activeEffect.type) {
           case EffectsEnum.HOT:
-            cell.cellAboveMe.occupier.activeEffect = <ActiveEffect>{
+            cell.occupier.activeEffect = <ActiveEffect>{
               placedByPLayer: cell.activeEffect.placedByPLayer,
               type: EffectsEnum.HOT,
               value: 20,
-              timeLeft: 1
+              timeLeft: 1,
             };
             break;
 
           case EffectsEnum.COLD:
-            cell.cellAboveMe.occupier.activeEffect = <ActiveEffect>{
+            cell.occupier.activeEffect = <ActiveEffect>{
               placedByPLayer: cell.activeEffect.placedByPLayer,
               type: EffectsEnum.COLD,
               value: 10,
-              timeLeft: 2
+              timeLeft: 2,
             };
             break;
 
           case EffectsEnum.OIL:
-            cell.cellAboveMe.occupier.activeEffect = <ActiveEffect>{
+            cell.occupier.activeEffect = <ActiveEffect>{
               placedByPLayer: cell.activeEffect.placedByPLayer,
               type: EffectsEnum.OIL,
               value: 0,
-              timeLeft: 4
+              timeLeft: 4,
             };
             break;
         }
@@ -385,8 +376,7 @@ export class PageDataAndInformationComponent implements OnInit {
   }
 
   private generatePlayers() {
-    this.players = [...Array(this.mapConfig.playersCount)
-      .keys()]
+    this.players = intRange(this.mapConfig.playersCount)
       .map(i => {
         const player = new Worm();
         player.id = i + 1;
@@ -427,22 +417,16 @@ export class PageDataAndInformationComponent implements OnInit {
     cell.occupier = player;
   }
 
-  private setupNewGame(isSpace = false) {
-    // Make a template. Modify this to make the real map
-    const {template, flatTemplate} = this.generateMapTemplate();
-
-    if (isSpace) {
-      this.makeSpaceMap(flatTemplate);
-    } else {
-      this.makeEarthMap(flatTemplate);
-    }
+  private setupNewGame() {
+    // Make a map. This is ref connected by each cell inside
+    const mapCells = generateMapTemplate(this.mapConfig, this.simplex);
 
     // Convert map into HTML friendly version
-    this.allCellsRef = flatMap<GridsCell>(template);
+    this.allCellsRef = flatMap<GridsCell>(mapCells);
     this.rows = intRange(this.mapConfig.yMax + 1)
       .map(y => (<GridsRow>{
         columns: intRange(this.mapConfig.xMax + 1)
-          .map(x => template[x][y]),
+          .map(x => mapCells[x][y]),
       }));
 
     this.generatePlayers();
@@ -450,114 +434,6 @@ export class PageDataAndInformationComponent implements OnInit {
     this.mapConfig.round = 0;
     this.processRound();
   }
-
-  private makeEarthMap(flatTemplate) {
-    // Light the pixels that border 2 regions, leaving clear regions on screen
-    flatTemplate.forEach(gc => gc.ipInfo.cookedValue = (gc.ipInfo.srcValue > 0.33 && gc.ipInfo.srcValue < 0.66) ? 1 : 0);
-
-    // "MS Paint" fill these regions, by only clicking below "mapConfig.getAltitude()"
-    flatTemplate.forEach((gc, i) => {
-      if (gc.y > this.mapConfig.getAltitude()
-        && gc.ipInfo.flag === undefined
-        && gc.ipInfo.cookedValue === 0) {
-
-        gc.ipInfo.flag = i;
-        intRange(flatTemplate.length).forEach(() => { // Loop once for every pixel in map - TODO: Optimize
-          // Constrain dilation against those pixel borders on screen
-          flatTemplate.filter(needFlagCell =>
-            needFlagCell.ipInfo.cookedValue === 0
-            && needFlagCell.ipInfo.flag === undefined
-            && needFlagCell.nearCells
-              .cardinalList()
-              .some(preFlagged => preFlagged.ipInfo.flag > 0))
-            .forEach(needFlagCell => needFlagCell.ipInfo.flag = i);
-        });
-      }
-    });
-    // Consolidate all flags into single value types
-    flatTemplate.forEach(gc => gc.ipInfo.cookedValue = (gc.ipInfo.flag > 0) ? 1 : 0);
-
-    // Morphological Dilation
-    flatTemplate.filter(gc => gc.ipInfo.cookedValue === 0 && gc.nearCells.cardinalList().some(nc => nc.ipInfo.cookedValue === 1))
-      .forEach(gc => gc.ipInfo.cookedValue = 1);
-
-    // Morphological Erosion
-    flatTemplate.filter(gc => gc.ipInfo.cookedValue === 1 && gc.nearCells.cardinalList().some(nc => nc.ipInfo.cookedValue === 0))
-      .forEach(gc => gc.ipInfo.cookedValue = 0);
-
-    // Paint cells with SurfaceTypes
-    flatTemplate.forEach(gc => {
-      if (gc.ipInfo.cookedValue < 1) {
-        gc.surfaceType = SurfaceTypeEnum.AIR;
-      } else {
-        // Get region data that is similar to landscape. This makes grass "follow" the hills
-        const zoom = 0.2;
-        const terrainValue = this.simplex.noise2D(gc.x * zoom, gc.y * zoom) * 0.5 + 0.5;
-
-        const soilAmount = 0.55;
-        if (terrainValue < soilAmount
-          // OR, "neighbour cells" and their "neighbours cells", all are NOT air squares. 2 level deep grass
-          || (gc.nearCells.cardinalList().every(nc => nc.nearCells.cardinalList()
-            .every(innerCell => innerCell.surfaceType !== SurfaceTypeEnum.AIR)))) {
-          gc.surfaceType = SurfaceTypeEnum.SOIL;
-        } else if (terrainValue < soilAmount + 0.1) {
-          gc.surfaceType = SurfaceTypeEnum.BIO;
-        } else {
-          gc.surfaceType = SurfaceTypeEnum.LEAF;
-        }
-      }
-
-      if (gc.y > this.mapConfig.yMax * 0.8) {
-        // Add Bed rock, but on different data that does NOT follow the landscape (.noise3D instead of 2D)
-        const zoom = 0.2;
-        const terrainValue = this.simplex.noise3D(gc.x * zoom, gc.y * zoom, 0) * 0.5 + 0.5;
-        gc.surfaceType = (terrainValue < 0.3) ? SurfaceTypeEnum.ROCK : gc.surfaceType;
-      }
-
-    });
-  }
-
-  private makeSpaceMap(flatTemplate) {
-    const amountOfSoil = 0.45;
-    flatTemplate.forEach(gc => {
-      if (gc.ipInfo.srcValue < amountOfSoil) {
-        gc.surfaceType = SurfaceTypeEnum.ASTEROID;
-      } else {
-        gc.surfaceType = SurfaceTypeEnum.SPACE;
-      }
-    });
-  }
-
-  private generateMapTemplate() {
-    // Make a map sized array of arrays. Arranged as a[x][y]. On screen, Y "ascends" DOWNWARDS
-    const template = intRange(this.mapConfig.xMax + 1)
-      .map(i => <GridsCell[]>intRange(this.mapConfig.yMax + 1)
-        .map(j => <GridsCell>({
-          x: i,
-          y: j,
-          nearCells: new NearCells(),
-          ipInfo: new ImageProcessingInfo(),
-        })));
-
-
-    const flatTemplate = flatMap<GridsCell>(template);
-    // Setup neighbour cells for every cell, and landscape template data
-    flatTemplate.forEach(gc => {
-      gc.nearCells.above = template[gc.x][gc.y - 1];
-      gc.nearCells.below = template[gc.x][gc.y + 1];
-      gc.nearCells.left = (template[gc.x - 1] || [])[gc.y];
-      gc.nearCells.right = (template[gc.x + 1] || [])[gc.y];
-
-      const zoom = 0.2;
-      gc.ipInfo.srcValue = this.simplex.noise2D(gc.x * zoom, gc.y * zoom) * 0.5 + 0.5;
-
-      // Deprecated
-      gc.cellAboveMe = <GridsCell>{};
-      gc.cellBelowMe = <GridsCell>{};
-    });
-    return {template, flatTemplate};
-  }
-
 
 }
 
