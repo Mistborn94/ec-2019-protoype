@@ -22,12 +22,6 @@ import {
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
-import { ProgressBarComponent } from './progress-bar/progress-bar.component';
-import { TutorialDialogComponent } from './tutorial-dialog/tutorial-dialog.component';
-import { WebsiteInfoDialogComponent } from './website-info-dialog/website-info-dialog.component';
-import { WebsiteInfoComponent } from './website-info/website-info.component';
-import { FeedbackDialogComponent } from 'src/app/common/feedback-dialog/feedback-dialog.component';
-import { EndGameDialogComponent } from 'src/app/compression-crash-course/compression-showcase/page-data-and-information/end-game-dialog/end-game-dialog.component';
 
 @NgModule({
             imports: [
@@ -77,26 +71,14 @@ import { EndGameDialogComponent } from 'src/app/compression-crash-course/compres
               MatIconModule,
               MatDialogModule,
               MatSlideToggleModule,
-              ProgressBarComponent,
-              WebsiteInfoComponent,
               MatInputModule,
               MatMenuModule,
               MatButtonToggleModule,
               MatProgressSpinnerModule,
             ],
             entryComponents: [
-              TutorialDialogComponent,
-              WebsiteInfoDialogComponent,
-              FeedbackDialogComponent,
-              EndGameDialogComponent,
             ],
             declarations: [
-              ProgressBarComponent,
-              TutorialDialogComponent,
-              WebsiteInfoDialogComponent,
-              WebsiteInfoComponent,
-              FeedbackDialogComponent,
-              EndGameDialogComponent,
             ]
           })
 export class MatComponentsModule {
