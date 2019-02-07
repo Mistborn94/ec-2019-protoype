@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RoutesRecognized } from '@angular/router';
+import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Location } from '@angular/common';
@@ -11,10 +11,10 @@ interface RouteData {
 }
 
 @Component({
-             selector: 'app-root',
-             templateUrl: './app.component.html',
-             styleUrls: ['./app.component.scss']
-           })
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+})
 export class AppComponent implements OnDestroy, OnInit {
 
   currentShowcase: string;
@@ -26,39 +26,38 @@ export class AppComponent implements OnDestroy, OnInit {
   unsubscribe$ = new Subject<void>();
   isTutorialMode: boolean = false;
 
-  constructor(private route: ActivatedRoute,
-              public router: Router,
+  constructor(public router: Router,
               private location: Location,
               private sanitizer: DomSanitizer) {
     this.router.events
-        .pipe(filter(event => event instanceof NavigationEnd),
-              takeUntil(this.unsubscribe$))
-        .subscribe(() => {
-          let newRouteValue = this.getNowRouteInfo();
-          if (newRouteValue) {
-            this.updateRouteButtonDisabled();
-          }
-        });
+      .pipe(filter(event => event instanceof NavigationEnd),
+        takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        let newRouteValue = this.getNowRouteInfo();
+        if (newRouteValue) {
+          this.updateRouteButtonDisabled();
+        }
+      });
 
     this.router.events
-        .pipe(
-          filter(event => event instanceof RoutesRecognized),
-          map((event: RoutesRecognized) => event.state.root.firstChild),
-          takeUntil(this.unsubscribe$)
-        )
-        .subscribe(parentRoute => {
-          let parentRouteData = <RouteData>parentRoute.data;
-          this.currentShowcase = parentRouteData.title;
-          this.currentImage = this.sanitizer.bypassSecurityTrustStyle(`url(${parentRouteData.image})`);
-          this.pageTitle = '';
+      .pipe(
+        filter(event => event instanceof RoutesRecognized),
+        map((event: RoutesRecognized) => event.state.root.firstChild),
+        takeUntil(this.unsubscribe$),
+      )
+      .subscribe(parentRoute => {
+        let parentRouteData = <RouteData>parentRoute.data;
+        this.currentShowcase = parentRouteData.title;
+        this.currentImage = this.sanitizer.bypassSecurityTrustStyle(`url(${parentRouteData.image})`);
+        this.pageTitle = '';
 
-          if (parentRoute.firstChild) {
-            let childRouteData = <RouteData>(parentRoute.firstChild.data);
-            if (childRouteData.title) {
-              this.pageTitle = childRouteData.title;
-            }
+        if (parentRoute.firstChild) {
+          let childRouteData = <RouteData>(parentRoute.firstChild.data);
+          if (childRouteData.title) {
+            this.pageTitle = childRouteData.title;
           }
-        });
+        }
+      });
   }
 
   pageBackward() {
@@ -73,16 +72,16 @@ export class AppComponent implements OnDestroy, OnInit {
     let nowSnapshot = this.router.routerState.snapshot;
     let children = nowSnapshot.root.children[0].routeConfig.children;
     let parentPage = nowSnapshot.url
-                                .split('/')
-                                .reverse()[1];
+      .split('/')
+      .reverse()[1];
     let nowPage = nowSnapshot.url
-                             .split('/')
-                             .reverse()[0];
+      .split('/')
+      .reverse()[0];
     if (nowSnapshot.root.children[0].routeConfig.children === undefined) {
       return;
     }
     let nowIdx = nowSnapshot.root.children[0].routeConfig.children
-                                             .findIndex(c => c.path === nowPage);
+      .findIndex(c => c.path === nowPage);
     return {children, parentPage, nowIdx};
   }
 
@@ -98,8 +97,8 @@ export class AppComponent implements OnDestroy, OnInit {
 
     if (this.isRoutePossible(modifier)) {
       this.router
-          .navigate([parentPage, children[nowIdx + modifier].path])
-          .then(() => this.updateRouteButtonDisabled());
+        .navigate([parentPage, children[nowIdx + modifier].path])
+        .then(() => this.updateRouteButtonDisabled());
     }
   }
 
