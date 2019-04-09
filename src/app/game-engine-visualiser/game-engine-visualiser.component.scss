@@ -38,6 +38,7 @@
 .cell-container {
   display: grid;
   grid-template-areas: 'overlap';
+  //overflow: hidden;
 
   .overlap {
     grid-area: overlap;
@@ -64,27 +65,34 @@
 }
 
 //SurfaceTypeEnum
-.space {
+.DEEP_SPACE {
   background-image: url('../../assets/texture_space.png');
   background-size: cover;
   background-color: hsla(0, 0%, 15%, 1);;
 }
-.asteroid {
+.DIRT {
   background-image: url('../../assets/texture_asteroid.png');
   background-size: cover;
   background-color: hsla(208, 27%, 90%, 1);
 }
-.air {
+.AIR {
+  background-image: url('../../assets/texture_asteroid.png');
+  filter: brightness(0.6);
+  //transform: scale(1.5) rotate(25deg);
+  background-size: cover;
+
   background-color: lightblue;
 
-  &::after {
+/*  &::after {
     content: "";
-    background-image: url('../../assets/texture_air.png');
+    //background-image: url('../../assets/texture_air.png');
+    background-image: url('../../assets/texture_asteroid.png');
+    filter: brightness(0.8);
     background-size: cover;
     opacity: 0.1;
     padding: 0;
     margin: -20px;
-  }
+  }*/
 }
 .soil {
   background-image: url('../../assets/texture_soil.png');

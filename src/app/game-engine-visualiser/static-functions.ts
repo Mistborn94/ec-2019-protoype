@@ -1,3 +1,7 @@
+export function getOverloadedProperty(object: Object, name: string) {
+  return object[Object.keys(object).find(key => key.includes(name))];
+}
+
 /**
  * Returns an array of integers in range [0..count]
  * @param count

@@ -24,9 +24,10 @@
     "@angular/platform-browser-dynamic": "^6.0.0",
     "@angular/router": "^6.0.0",
     "core-js": "^2.5.4",
-    "ec-2019-game-engine": "file:../test",
+    "ec-2019-game-engine": "file:../game-engine/build/package",
     "rxjs": "^6.2.1",
     "simplex-noise": "^2.4.0",
+    "test": "^0.6.0",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {

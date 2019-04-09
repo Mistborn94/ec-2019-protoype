@@ -14,7 +14,7 @@ export function addBattleRoyaleLandscape(flatTemplate: GridsCell[], mapConfig: M
 
   flatTemplate.forEach(c => {
     if (euclideanDistance(c, mapCenter) >= radiusFit) {
-      c.surfaceType = SurfaceTypeEnum.ROCK;
+      c.type = SurfaceTypeEnum.ROCK;
     }
   })
 
@@ -24,9 +24,9 @@ export function makeSpaceMap(flatTemplate) {
   const amountOfSoil = 0.45;
   flatTemplate.forEach(gc => {
     if (gc.ipInfo.srcValue < amountOfSoil) {
-      gc.surfaceType = SurfaceTypeEnum.ASTEROID;
+      gc.type = SurfaceTypeEnum.DIRT;
     } else {
-      gc.surfaceType = SurfaceTypeEnum.SPACE;
+      gc.type = SurfaceTypeEnum.DEEP_SPACE;
     }
   });
 }

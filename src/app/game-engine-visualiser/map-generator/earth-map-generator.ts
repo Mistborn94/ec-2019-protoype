@@ -38,7 +38,7 @@ export function makeEarthMap(flatTemplate) {
   // Paint cells with SurfaceTypes
   flatTemplate.forEach(gc => {
     if (gc.ipInfo.cookedValue < 1) {
-      gc.surfaceType = SurfaceTypeEnum.AIR;
+      gc.type = SurfaceTypeEnum.AIR;
     } else {
       // Get region data that is similar to landscape. This makes grass "follow" the hills
       const zoom = 0.2;
@@ -48,12 +48,12 @@ export function makeEarthMap(flatTemplate) {
       if (terrainValue < soilAmount
         // OR, "neighbour cells" and their "neighbours cells", all are NOT air squares. 2 level deep grass
         || (gc.nearCells.cardinalList().every(nc => nc.nearCells.cardinalList()
-          .every(innerCell => innerCell.surfaceType !== SurfaceTypeEnum.AIR)))) {
-        gc.surfaceType = SurfaceTypeEnum.SOIL;
+          .every(innerCell => innerCell.type !== SurfaceTypeEnum.AIR)))) {
+        gc.type = SurfaceTypeEnum.SOIL;
       } else if (terrainValue < soilAmount + 0.1) {
-        gc.surfaceType = SurfaceTypeEnum.BIO;
+        gc.type = SurfaceTypeEnum.BIO;
       } else {
-        gc.surfaceType = SurfaceTypeEnum.LEAF;
+        gc.type = SurfaceTypeEnum.LEAF;
       }
     }
 
@@ -61,7 +61,7 @@ export function makeEarthMap(flatTemplate) {
       // Add Bed rock, but on different data that does NOT follow the landscape (.noise3D instead of 2D)
       const zoom = 0.2;
       const terrainValue = this.simplex.noise3D(gc.x * zoom, gc.y * zoom, 0) * 0.5 + 0.5;
-      gc.surfaceType = (terrainValue < 0.3) ? SurfaceTypeEnum.ROCK : gc.surfaceType;
+      gc.type = (terrainValue < 0.3) ? SurfaceTypeEnum.ROCK : gc.surfaceType;
     }
 
   });

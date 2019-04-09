@@ -4,7 +4,6 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
-import ec2019 from 'ec-2019-game-engine';
 
 interface RouteData {
   title: string;
@@ -25,7 +24,6 @@ export class AppComponent implements OnDestroy, OnInit {
   backwardButtonDisabled: boolean;
 
   unsubscribe$ = new Subject<void>();
-  isTutorialMode: boolean = false;
 
   constructor(public router: Router,
               private location: Location,
@@ -59,44 +57,6 @@ export class AppComponent implements OnDestroy, OnInit {
           }
         }
       });
-
-    const config = {
-      'maxRounds': 200,
-      'maxDoNothings': 10,
-      'commandoWorms': {
-        'count': 3,
-        'initialHp': 100,
-        'movementRage': 1,
-        'diggingRange': 1,
-        'weapon': {
-          'damage': 10,
-          'range': 4
-        }
-      },
-      'pushbackDamage': 4,
-      'mapSize': 32,
-      'healthPackHp': 5,
-      'scores': {
-        'attack': 5,
-        'killShot': 10,
-        'missedAttack': 2,
-        'powerup': 6,
-        'dig': 4,
-        'move': 1,
-        'invalidCommand': -1,
-        'doNothing': 0
-      }
-    };
-
-    console.log('EC 2019');
-    console.log(ec2019);
-    console.log(config.commandoWorms);
-
-    let entryPoint = new ec2019.GameRunner(0, config);
-    console.log(entryPoint);
-    let map1 = entryPoint.generateMap();
-    console.log(map1);
-
   }
 
 

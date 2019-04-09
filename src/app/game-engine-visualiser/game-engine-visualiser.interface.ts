@@ -1,12 +1,51 @@
+export interface MapCell {
+  occupier: Worm;
+  powerup: Powerup;
+  type: CellType;
+  x: number;
+  y: number;
+
+  isActionable: boolean;
+  isAttackable: boolean;
+}
+
+export interface CellType {
+  name$: string;
+}
+
+export interface Worm {
+  diggingRange: number;
+  health: number;
+  id: number;
+  movementRange: number;
+  roundHit: number;
+  roundMoved: number;
+  weapon: { damage: number, range: number };
+  dead: boolean;
+  player: Player;
+  position: Position;
+  previousPosition: Position;
+}
+
+export interface Powerup {
+  type: string;
+  value: number;
+}
+
+export interface Player {
+  id: string;
+}
+
+
 export enum SurfaceTypeEnum {
-  AIR = 'air',
+  ROCK = 'rock',
   SOIL = 'soil',
   WATER = 'water',
   LEAF = 'leaf',
   BIO = 'bio',
-  SPACE = 'space',
-  ASTEROID = 'asteroid',
-  ROCK = 'rock',
+  DEEP_SPACE = 'DEEP_SPACE',
+  DIRT = 'DIRT',
+  AIR = 'AIR',
 }
 
 export enum EffectsEnum {
@@ -62,9 +101,9 @@ export class ImageProcessingInfo {
 export class GridsCell {
   x: number;
   y: number;
-  surfaceType: SurfaceTypeEnum;
+  type: SurfaceTypeEnum;
   activeEffect: ActiveEffect;
-  occupier: Worm;
+  occupier: OldWorm;
   isActionable: boolean;
   isAttackable: boolean;
   nearCells: NearCells = <NearCells>{};
@@ -79,7 +118,7 @@ export class WormsPlayer {
   id: number;
   name: string;
   weapon = new BasicGun();
-  worms: Worm[];
+  worms: OldWorm[];
   wormCycleTracker: number = 1;
   score: number;
 
@@ -88,7 +127,7 @@ export class WormsPlayer {
   }
 }
 
-export class Worm {
+export class OldWorm {
   id: number;
   hitPoints = 100;
   score = 0;
