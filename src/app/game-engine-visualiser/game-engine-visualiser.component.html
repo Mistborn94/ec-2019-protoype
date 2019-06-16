@@ -6,7 +6,7 @@
       <h1>wormOnTurn {{wormOnTurn?.id}}</h1>
 
       <h4>Round {{gameMap?.currentRound}}</h4>
-      <h2>Player <b>{{playerOnTurn?.name}}</b>, move it!</h2>
+<!--      <h2>Player <b>{{playerOnTurn?.name}}</b>, move it!</h2>-->
       <br>
 
       <div *ngFor="let p of []">
@@ -42,32 +42,17 @@
                style="z-index: 4; color: red">
             * <!--action marker-->
             <mat-menu #actionsMenu="matMenu">
-              <button *ngIf="cell.isActionable && cell.type === surfaceTypeEnum.DEEP_SPACE"
+              <button *ngIf="cell.isActionable && cell.type.name == 'AIR'"
                       mat-menu-item
                       (click)="doPlayerAction(cell, actionsEnum.MOVE)">Move here
               </button>
-              <!--
-                            <button *ngIf="cell.isActionable && cell.type !== surfaceTypeEnum.DEEP_SPACE"
-                                    mat-menu-item
-                                    (click)="doPlayerAction(cell, actionsEnum.HEAT)">Heat this block
-                            </button>-->
 
-              <button *ngIf="cell.isActionable && cell.type !== surfaceTypeEnum.DEEP_SPACE"
+              <button *ngIf="cell.isActionable && cell.type.name == 'DIRT'"
                       mat-menu-item
                       (click)="doPlayerAction(cell, actionsEnum.DIG)">Dig through this block
               </button>
-              <!--
-                            <button *ngIf="cell.isActionable && cell.type !== surfaceTypeEnum.DEEP_SPACE"
-                                    mat-menu-item
-                                    (click)="doPlayerAction(cell, actionsEnum.FREEZE)">Freeze this block
-                            </button>-->
 
-              <!--              <button *ngIf="cell.isActionable && cell.type !== surfaceTypeEnum.DEEP_SPACE"
-                                    mat-menu-item
-                                    (click)="doPlayerAction(cell, actionsEnum.SPILL_OIL)">Spill oil on this block
-                            </button>-->
-
-              <button *ngIf="cell.isAttackable"
+              <button *ngIf="cell.isActionable && cell.type.name == 'AIR'"
                       mat-menu-item
                       (click)="doPlayerAction(cell, actionsEnum.SHOOT)">Shoot!
               </button>
@@ -75,15 +60,11 @@
             </mat-menu>
           </div>
 
-          <!--<div class="square overlap"-->
-          <!--[ngClass]="cell?.activeEffect?.type"-->
-          <!--style="z-index: 3"></div>-->
-
           <img *ngIf="cell.occupier"
                class="occupant overlap"
                [class.on-turn]="cell.occupier.id === playerOnTurn"
                style="z-index: 2"
-               [title]="'Player ' + cell.occupier.name"
+               [title]="'Player ' + cell.occupier.id"
                [src]="'../../../../assets/worm' + cell.occupier.player.id + cell.occupier.id + '.png'"/>
 
 

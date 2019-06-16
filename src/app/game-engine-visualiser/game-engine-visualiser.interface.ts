@@ -115,16 +115,18 @@ export class GridsRow {
 }
 
 export class WormsPlayer {
-  id: number;
-  name: string;
-  weapon = new BasicGun();
-  worms: OldWorm[];
-  wormCycleTracker: number = 1;
-  score: number;
-
-  updateWormCycleTracker() {
-    this.wormCycleTracker = ((this.wormCycleTracker + 1) % this.worms.length) + 1;
-  }
+  commandScore: number;
+  consecutiveDoNothingsCount: number;
+  currentWorm: Worm;
+  id: 1;
+  previousWorm: Worm;
+  wormSelectionTokens: 5;
+  worms: Worm[];
+  dead: boolean;
+  disqualified: boolean;
+  health: number;
+  livingWorms: Worm[];
+  totalScore: number;
 }
 
 export class OldWorm {

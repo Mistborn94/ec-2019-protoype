@@ -5,6 +5,7 @@ import { ActionsEnum, GridsCell, GridsRow, MapCell, SurfaceTypeEnum, WormsPlayer
 import { intRange } from './static-functions';
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
+import { iterator } from 'rxjs/internal-compatibility';
 
 @Component({
   selector: 'app-game-engine-visualiser',
@@ -15,8 +16,6 @@ export class GameEngineVisualiserComponent implements OnInit {
 
 
   public playerOnTurn: WormsPlayer;
-
-  public surfaceTypeEnum = SurfaceTypeEnum;
   public actionsEnum = ActionsEnum;
 
   private config: any;
@@ -41,12 +40,16 @@ export class GameEngineVisualiserComponent implements OnInit {
               .map(x => flatCells.find(c => x === c.x && y === c.y)),
           }));
 
-        this.wormOnTurn = this.gameMap.players.toArray()[0].currentWorm;
+        this.playerOnTurn = this.gameMap.players.toArray()[0];
+        this.wormOnTurn = this.playerOnTurn.currentWorm;
 
         let wormOnTurnPosition = this.gameMap.players.toArray()[0].currentWorm.position;
         let wormOnTurnCell = flatCells.find(c => c.x === wormOnTurnPosition.x && c.y === wormOnTurnPosition.y);
         this.getNearCells(flatCells, wormOnTurnCell)
           .forEach(c => c.isActionable = true);
+
+
+        console.log(this.gameRunner, this.gameMap);
       });
 
   }
@@ -60,52 +63,48 @@ export class GameEngineVisualiserComponent implements OnInit {
   }
 
   public doPlayerAction(cell: GridsCell, action: ActionsEnum) {
-    /*const w = this.playerOnTurn.worms.find(w => w.id === this.playerOnTurn.wormCycleTracker);
+    let commands = {
+      entries: {
+        iterator: _ => {
+          let iterator = {
+            idx: 0,
+            size: 2,
+            items: [{
+              key: 1,
+              value: 'C;0;move 1 1',
+            }],
+            hasNext: _ => iterator.idx < (commands.size - 1),
+            next: _ => {
+              let result = commands.entries.items[iterator.idx];
+              iterator.idx++;
+              return result;
+            },
+          };
+          return iterator;
+        },
+        items: [{
+          key: 1,
+          value: 'C;0;move 1 1',
+        }],
+      },
+      size: undefined,
+    };
+    commands.size = commands.entries.items.length;
+
     switch (action) {
 
       case ActionsEnum.DIG:
-        cell.surfaceType = SurfaceTypeEnum.SPACE;
-        this.rows[w.y].columns[w.x].occupier = undefined;
-        this.setWormAsOccupier(w, cell);
+
         break;
 
       case ActionsEnum.MOVE:
-        this.rows[w.y].columns[w.x].occupier = undefined;
-        this.setWormAsOccupier(w, cell);
-        break;
-
-      case ActionsEnum.HEAT:
-        cell.activeEffect = <ActiveEffect>{
-          placedByPlayer: this.playerOnTurn,
-          type: EffectsEnum.HOT,
-          value: 20,
-          timeLeft: 1,
-        };
-        break;
-
-      case ActionsEnum.FREEZE:
-        cell.activeEffect = <ActiveEffect>{
-          placedByPlayer: this.playerOnTurn,
-          type: EffectsEnum.COLD,
-          value: 10,
-          timeLeft: 2,
-        };
-        break;
-
-      case ActionsEnum.SPILL_OIL:
-        cell.activeEffect = <ActiveEffect>{
-          placedByPlayer: this.playerOnTurn,
-          type: EffectsEnum.OIL,
-          value: 0,
-          timeLeft: 4,
-        };
+        this.gameRunner.processRound(this.gameMap, commands);
         break;
 
       case ActionsEnum.SHOOT:
-        cell.occupier.hitPoints -= this.playerOnTurn.weapon.damage;
         break;
 
-    }*/
+    }
 
     // this.processRound();
 
