@@ -39,54 +39,6 @@ export function clone(obj: any): any {
   return JSON.parse(JSON.stringify(obj));
 }
 
-export function getLinesOfTextSplitByNumber(text: string, width: number) {
-  return text
-    .split('')
-    .reduce((sum, c) => {
-              let newestLineIndex = sum.length - 1;
-
-              if (sum[newestLineIndex].length < width && c.charCodeAt(0) !== 10) {
-                sum[newestLineIndex] += c;
-              } else {
-                sum.push(c);
-              }
-              return sum;
-            },
-            ['']
-    );
-}
-
-export function getTextInsertedSpacesByNumber(text: string, width: number): string {
-  return text
-    .split('')
-    .reduce((sum, c, i) => {
-              if (i - sum.i > width) {
-                sum.i = i;
-                sum.text += ' ';
-              }
-              sum.text += c;
-              return sum;
-            },
-            {i: -1, text: ''})
-    .text;
-}
-
-export function getArraySplitByNumber(array: any[], width: number) {
-  return array
-    .reduce((sum, c) => {
-              let newestLineIndex = sum.length - 1;
-
-              if (sum[newestLineIndex].length < width) {
-                sum[newestLineIndex].push(c);
-              } else {
-                sum.push([c]);
-              }
-              return sum;
-            },
-            [[]]
-    );
-}
-
 export function roundToDecimalPlace(unrounded: number, decimalPlaces: number = 0) {
   let multiplier = Math.pow(10, decimalPlaces);
   return Math.round(multiplier * unrounded) / multiplier;

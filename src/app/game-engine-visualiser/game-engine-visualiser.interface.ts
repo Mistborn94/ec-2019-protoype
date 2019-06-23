@@ -1,34 +1,70 @@
-export enum SurfaceTypeEnum {
-  AIR = 'air',
-  SOIL = 'soil',
-  WATER = 'water',
-  LEAF = 'leaf',
-  BIO = 'bio',
-  SPACE = 'space',
-  ASTEROID = 'asteroid',
-  ROCK = 'rock',
+export interface MapCell {
+  occupier: Worm;
+  powerup: Powerup;
+  type: CellType;
+  x: number;
+  y: number;
+  isInDigMoveRange: boolean;
+  isAttackable: boolean;
 }
 
-export enum EffectsEnum {
-  HOT = 'hot',
-  COLD = 'cold',
-  OIL = 'oil'
+export interface CellType {
+  name$: string;
+}
+
+interface Weapon {
+  damage: number;
+  range: number;
+}
+
+interface Bananas {
+}
+
+export interface Worm {
+  diggingRange: number;
+  health: number;
+  id: number;
+  movementRange: number;
+  roundHit: number;
+  roundMoved: number;
+  weapon: Weapon;
+  bananas: Bananas;
+  dead: boolean;
+  player: Player;
+  position: Position;
+  previousPosition: Position;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface Pair<T, U> {
+  first: T;
+  second: U;
+}
+
+export interface Powerup {
+  type: string;
+  value: number;
+}
+
+export interface Player {
+  id: string;
+}
+
+export enum SurfaceTypeEnum {
+  DEEP_SPACE = 'DEEP_SPACE',
+  DIRT = 'DIRT',
+  AIR = 'AIR',
 }
 
 export enum ActionsEnum {
   MOVE = 'move',
-  HEAT = 'heat',
-  FREEZE = 'freeze',
-  SPILL_OIL = 'spill_oil',
   DIG = 'dig',
-  SHOOT = 'shoot'
-}
-
-export class ActiveEffect {
-  placedByPlayer: WormsPlayer;
-  type: EffectsEnum;
-  value: number;
-  timeLeft: number;
+  SHOOT = 'shoot',
+  BANANA = 'banana',
 }
 
 export class NearCells {
@@ -53,22 +89,13 @@ export class NearCells {
   }
 }
 
-export class ImageProcessingInfo {
-  srcValue: number;
-  cookedValue: number;
-  flag: number;
-}
-
 export class GridsCell {
   x: number;
   y: number;
-  surfaceType: SurfaceTypeEnum;
-  activeEffect: ActiveEffect;
-  occupier: Worm;
-  isActionable: boolean;
-  isAttackable: boolean;
-  nearCells: NearCells = <NearCells>{};
-  ipInfo: ImageProcessingInfo = <ImageProcessingInfo>{}; // Image Processing Info, used ONLY during map generation
+  type: SurfaceTypeEnum;
+  occupier: OldWorm;
+  isInDigMoveRange: boolean;
+  isInBananaRange: boolean;
 }
 
 export class GridsRow {
@@ -76,67 +103,23 @@ export class GridsRow {
 }
 
 export class WormsPlayer {
-  id: number;
-  name: string;
-  weapon = new BasicGun();
+  commandScore: number;
+  consecutiveDoNothingsCount: number;
+  currentWorm: Worm;
+  id: 1;
+  previousWorm: Worm;
+  wormSelectionTokens: 5;
   worms: Worm[];
-  wormCycleTracker: number = 1;
-  score: number;
-
-  updateWormCycleTracker() {
-    this.wormCycleTracker = ((this.wormCycleTracker + 1) % this.worms.length) + 1;
-  }
+  dead: boolean;
+  disqualified: boolean;
+  health: number;
+  livingWorms: Worm[];
+  totalScore: number;
 }
 
-export class Worm {
+export class OldWorm {
   id: number;
-  hitPoints = 100;
   score = 0;
   x: number;
   y: number;
-  activeEffect: ActiveEffect;
-  unitClass: UnitClassEnum = UnitClassEnum.centurion;
-}
-
-export class UnitClassEnum {
-  constructor(public label: string) {
-  }
-
-  static centurion = new UnitClassEnum('centurion');
-}
-
-class BasicGun {
-  damage = 20;
-  range = 20;
-}
-
-export class MapConfig {
-  xMax = 31;
-  yMax = 31;
-  seed: number = Math.round(Math.random() * 10e15);
-  playersCount = 2;
-  squadSize = 3;
-  roundsMax = 400;
-  round = 0;
-  private altitude = 0.3; // Height of map completely filled
-
-  /**
-   * Returns the inverse of altitude, which is the intended Y value for altitude
-   * @returns {number}
-   */
-  getAltitude() {
-    return this.yMax * (1 - this.altitude);
-  }
-
-  getCenter() {
-    return {
-      x: ((this.xMax + 1) / 2) - 0.5,
-      y: ((this.yMax + 1) / 2) - 0.5,
-    };
-  }
-
-  getRadius() {
-    let center = this.getCenter();
-    return Math.min(center.x, center.y) + 1;
-  }
 }

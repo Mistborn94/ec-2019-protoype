@@ -1,0 +1,11 @@
+{
+  "name": "kotlin-logging",
+  "version": "1.0.0",
+  "description": "Test",
+  "main": "kotlin-logging.js",
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "kotlin": "^1.3.21"
+  }
+}
