@@ -2119,12 +2119,10 @@
     AgentWorm_instance = this;
   }
   AgentWorm.prototype.buildWithPositions = function (id, config, position) {
-    var tmp$;
-    return Worm_init(id, config.agentWorms.initialHp, position, config.agentWorms.weapon.copy_vux9f0$(), (tmp$ = config.agentWorms.bananas) != null ? tmp$.copy_tjonv8$() : null, config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
+    return Worm_init(id, config.agentWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
   };
   AgentWorm.prototype.build = function (id, config) {
-    var tmp$;
-    return new Worm(id, config.agentWorms.initialHp, config.agentWorms.weapon.copy_vux9f0$(), (tmp$ = config.agentWorms.bananas) != null ? tmp$.copy_tjonv8$() : null, config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
+    return new Worm(id, config.agentWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
   };
   AgentWorm.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2139,10 +2137,34 @@
     return AgentWorm_instance;
   }
   function Bananas(damage, range, count, damageRadius) {
+    Bananas$Companion_getInstance();
     this.damage = damage;
     this.range = range;
     this.count = count;
     this.damageRadius = damageRadius;
+  }
+  function Bananas$Companion() {
+    Bananas$Companion_instance = this;
+  }
+  Bananas$Companion.prototype.fromBananas_ok0wac$ = function (bananas) {
+    var tmp$;
+    if (bananas != null)
+      tmp$ = new Bananas(bananas.damage, bananas.range, bananas.count, bananas.damageRadius);
+    else
+      tmp$ = null;
+    return tmp$;
+  };
+  Bananas$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Bananas$Companion_instance = null;
+  function Bananas$Companion_getInstance() {
+    if (Bananas$Companion_instance === null) {
+      new Bananas$Companion();
+    }
+    return Bananas$Companion_instance;
   }
   Bananas.$metadata$ = {
     kind: Kind_CLASS,
@@ -2182,10 +2204,10 @@
     CommandoWorm_instance = this;
   }
   CommandoWorm.prototype.buildWithPositions = function (id, config, position) {
-    return Worm_init(id, config.commandoWorms.initialHp, position, config.commandoWorms.weapon.copy_vux9f0$(), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
+    return Worm_init(id, config.commandoWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
   };
   CommandoWorm.prototype.build = function (id, config) {
-    return new Worm(id, config.commandoWorms.initialHp, config.commandoWorms.weapon.copy_vux9f0$(), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
+    return new Worm(id, config.commandoWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
   };
   CommandoWorm.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2200,34 +2222,32 @@
     return CommandoWorm_instance;
   }
   function Weapon(damage, range) {
+    Weapon$Companion_getInstance();
     this.damage = damage;
     this.range = range;
+  }
+  function Weapon$Companion() {
+    Weapon$Companion_instance = this;
+  }
+  Weapon$Companion.prototype.fromWeapon_12afb5$ = function (weapon) {
+    return new Weapon(weapon.damage, weapon.range);
+  };
+  Weapon$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Weapon$Companion_instance = null;
+  function Weapon$Companion_getInstance() {
+    if (Weapon$Companion_instance === null) {
+      new Weapon$Companion();
+    }
+    return Weapon$Companion_instance;
   }
   Weapon.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Weapon',
     interfaces: []
-  };
-  Weapon.prototype.component1 = function () {
-    return this.damage;
-  };
-  Weapon.prototype.component2 = function () {
-    return this.range;
-  };
-  Weapon.prototype.copy_vux9f0$ = function (damage, range) {
-    return new Weapon(damage === void 0 ? this.damage : damage, range === void 0 ? this.range : range);
-  };
-  Weapon.prototype.toString = function () {
-    return 'Weapon(damage=' + Kotlin.toString(this.damage) + (', range=' + Kotlin.toString(this.range)) + ')';
-  };
-  Weapon.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.damage) | 0;
-    result = result * 31 + Kotlin.hashCode(this.range) | 0;
-    return result;
-  };
-  Weapon.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.damage, other.damage) && Kotlin.equals(this.range, other.range)))));
   };
   function Worm(id, health, weapon, bananas, diggingRange, movementRange, profession) {
     if (bananas === void 0)
@@ -3441,6 +3461,7 @@
     this.seed = seed;
     this.config = config;
     this.playerCount = playerCount;
+    this.rendererJson_0 = new WormsRendererJson(this.config);
   }
   GameRunner.prototype.getGeneratedMap = function () {
     var $receiver = new IntRange(1, this.playerCount);
@@ -3461,6 +3482,9 @@
     var parser = new CommandParser(Random.Default, this.config);
     var wormsCommands = mapOf([new Pair(player1, listOf_0(parser.parseCommand_61zpoe$(player1Command))), new Pair(player2, listOf_0(parser.parseCommand_61zpoe$(player2Command)))]);
     return (new WormsRoundProcessor(this.config)).processRound_wfe2xc$(wormsMap, wormsCommands);
+  };
+  GameRunner.prototype.renderJson = function (map, player) {
+    return this.rendererJson_0.render_fubnl6$(map, player);
   };
   GameRunner.prototype.getErrorList = function (wormsMap, wormsPlayer) {
     return (new WormsRoundProcessor(this.config)).getErrorList_fubnl6$(wormsMap, wormsPlayer);
@@ -3605,9 +3629,15 @@
   Object.defineProperty(package$player, 'AgentWorm', {
     get: AgentWorm_getInstance
   });
+  Object.defineProperty(Bananas, 'Companion', {
+    get: Bananas$Companion_getInstance
+  });
   package$player.Bananas = Bananas;
   Object.defineProperty(package$player, 'CommandoWorm', {
     get: CommandoWorm_getInstance
+  });
+  Object.defineProperty(Weapon, 'Companion', {
+    get: Weapon$Companion_getInstance
   });
   package$player.Weapon = Weapon;
   package$player.Worm_init_oh7tet$ = Worm_init;

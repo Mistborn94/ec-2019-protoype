@@ -2,7 +2,7 @@
   "maxRounds": 400,
   "maxDoNothings": 12,
   "commandoWorms": {
-    "count": 2,
+    "count": 1,
     "initialHp": 150,
     "movementRage": 1,
     "diggingRange": 1,
@@ -30,7 +30,7 @@
     "professionName": "Agent"
   },
   "pushbackDamage": 20,
-  "mapSize": 33,
+  "mapSize": 13,
   "healthPackHp": 10,
   "totalHealthPacks": 2,
   "scores": {
