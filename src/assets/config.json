@@ -23,7 +23,7 @@
     },
     "bananas": {
       "damage": 20,
-      "range": 5,
+      "range": 3,
       "count": 3,
       "damageRadius": 2
     },

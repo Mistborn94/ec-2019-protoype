@@ -6,6 +6,8 @@
   display: grid;
   grid-template-columns: auto auto;
   grid-gap: 8px;
+
+  overflow: hidden;
 }
 
 .player-details-container {
@@ -37,18 +39,56 @@
   place-content: center;
 
   color: #F5F5F5;
+
+  position: relative;
+}
+
+._command-overlay {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  place-self: center;
+
+  animation: transparentToVisible 750ms forwards;
+}
+
+@keyframes transparentToVisible {
+  from {
+    opacity: 0
+  }
+  to {
+    opacity: 1
+  }
+}
+
+.basic-commands {
+  @extend ._command-overlay;
+  background-color: transparentize(red, 0.6);
+  transform: rotate(45deg);
+}
+
+.banana-command {
+  @extend ._command-overlay;
+  background-color: transparentize(yellow, 0.6);
+  border-radius: 50%;
 }
 
 .action-icon {
-    font-size: 40px;
-    height: 40px;
+  font-size: 40px;
+  height: 40px;
 }
 
-::ng-deep .mat-menu-panel {
-  min-width: unset !important;
+::ng-deep {
+  .mat-menu-panel {
+    min-width: unset !important;
+
+    button {
+      height: 60px;
+    }
+  }
 }
 
-.cell-container {
+.overlap-container {
   display: grid;
   grid-template-areas: 'overlap';
 
@@ -62,13 +102,17 @@
   transition: filter 500ms;
 
   &:hover {
-    filter: brightness(1.25);
+    filter: brightness(1.35);
   }
 }
 
 .occupant {
-  height: 75%;
-  place-self: center;
+  display: grid;
+  place-items: center;
+
+  img {
+    width: 75%;
+  }
 }
 
 .powerup {
@@ -78,16 +122,55 @@
   color: white;
   place-self: center;
   display: grid;
-  width: 100%;
-  height: 100%;
+
+  border: ridge 4px white;
+  width: 80%;
+  height: 80%;
 
   mat-icon {
-    font-size: 70px;
+    font-size: 55px;
   }
 }
 
 .on-turn {
-  animation: animateVerticalAlignment 1500ms ease infinite;
+  img {
+    animation: animateJump 2000ms infinite;
+  }
+
+  .flashing-x {
+    width: 100%;
+    height: 100%;
+
+    $light-green: #47ff3f;
+    $dark-green: #222d29;
+    background:
+      linear-gradient(45deg, transparent 40%, $dark-green 49%, $light-green 50%, $dark-green 51%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, $dark-green 49%, $light-green 50%, $dark-green 51%, transparent 60%);
+
+    animation: animateFlashingXScaleRotate 2000ms forwards,
+    animateFlashingXOpacity 1500ms forwards;
+  }
+}
+
+@keyframes animateFlashingXScaleRotate {
+  0% {
+    transform: scale(10) rotate(0deg);
+  }
+  100% {
+    transform: scale(0.6) rotate(180deg);
+  }
+}
+
+@keyframes animateFlashingXOpacity {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes animateOpacity {
@@ -102,15 +185,15 @@
   }
 }
 
-@keyframes animateVerticalAlignment {
+@keyframes animateJump {
   0% {
-    transform: translateY(0px)
+    transform: translateY(0px) scale(1);
   }
   7% {
-    transform: translateY(-7px)
+    transform: translateY(-7px) scale(1.1)
   }
   14% {
-    transform: translateY(0px)
+    transform: translateY(0px) scale(1)
   }
 }
 

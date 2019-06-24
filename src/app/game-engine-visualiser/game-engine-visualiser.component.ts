@@ -99,11 +99,13 @@ export class GameEngineVisualiserComponent implements OnInit, OnDestroy {
     let wormOnTurnCell = this.flatCells.find(c => c.x === wormOnTurnPosition.x && c.y === wormOnTurnPosition.y);
     this.flatCells.forEach(c => c.isInDigMoveRange = c.isInBananaRange = false);
     this.getNearCells(wormOnTurnCell)
+      .filter(c => !(c.x === currentWorm.position.x && c.y === currentWorm.position.y))
       .forEach(c => c.isInDigMoveRange = true);
 
-    if (currentWorm.bananas) {
+    if (currentWorm.bananas && currentWorm.bananas.count) {
       this.flatCells
-        .filter(c => this.shootingDistance(currentWorm.position, c) <= bananaRange)
+        .filter(c => this.shootingDistance(currentWorm.position, c) <= bananaRange
+          && !(c.x === currentWorm.position.x && c.y === currentWorm.position.y))
         .forEach(c => c.isInBananaRange = true);
     }
   }
