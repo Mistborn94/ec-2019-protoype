@@ -1,12 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from 'src/app/end-game-dialog/end-game-dialog.component';
 import {
   ActionsEnum,
-  GridsCell,
-  GridsRow,
-  MapCell,
-  Pair,
+  GameConfig,
+  GameMap,
+  GameRunner,
+  MapCell, Pair,
   Position,
   SurfaceTypeEnum,
   WormsPlayer,
@@ -14,28 +14,49 @@ import {
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
-import { bufferCount, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { getArrayRange, getRandomFromArray } from '../common/utils';
+
+class CommandPair {
+
+  player: WormsPlayer;
+  command: string;
+  type: ActionsEnum;
+
+  constructor(player: WormsPlayer, command: string, type: ActionsEnum) {
+    this.player = player;
+    this.command = command;
+    this.type = type;
+  }
+
+  static fromCommandPair(commandPair: CommandPair): CommandPair {
+    return new CommandPair(commandPair.player, commandPair.command, commandPair.type);
+  }
+
+  toPair(): Pair<WormsPlayer, string> {
+    return {first: this.player, second: this.command};
+  }
+
+}
 
 @Component({
   selector: 'app-game-engine-visualiser',
   templateUrl: './game-engine-visualiser.component.html',
   styleUrls: ['./game-engine-visualiser.component.scss'],
 })
-export class GameEngineVisualiserComponent implements OnInit, OnDestroy {
+export class GameEngineVisualiserComponent implements OnDestroy {
 
   player1: WormsPlayer;
-  player2: WormsPlayer;
+  private player2: WormsPlayer;
   actionsEnum = ActionsEnum;
 
-  config: any;
-  rows: GridsRow[];
-  gameRunner: ec2019.GameRunner;
-  gameMap: any;
-  flatCells: any;
+  private config: GameConfig;
+  private gameRunner: GameRunner;
+  gameMap: GameMap;
+  flatCells: MapCell[];
 
-  commandsCollector$ = new Subject<Pair<WormsPlayer, string>>();
-  unsubscribe$ = new Subject<void>();
+  private commandsCollector$ = new Subject<CommandPair>();
+  private unsubscribe$ = new Subject<void>();
 
   constructor(private dialog: MatDialog,
               private http: HttpClient) {
@@ -45,34 +66,45 @@ export class GameEngineVisualiserComponent implements OnInit, OnDestroy {
 
         this.gameRunner = new ec2019.GameRunner(0, this.config, 2);
         this.gameMap = this.gameRunner.getGeneratedMap();
+        this.setMapStyle(this.gameMap);
         this.flatCells = this.gameMap.cells.toArray();
 
-        this.rows = getArrayRange(item.mapSize)
-          .map(y => (<GridsRow>{
-            columns: getArrayRange(item.mapSize)
-              .map(x => this.flatCells.find(c => x === c.x && y === c.y)),
-          }));
+        let playersList = this.gameMap.players.toArray();
+        this.player1 = playersList[0];
+        this.player2 = playersList[1];
 
-        this.player1 = this.gameMap.players.toArray()[0];
-        this.player2 = this.gameMap.players.toArray()[1];
+        this.nextRound();
 
-        this.refreshMap();
-
-        console.log(this.gameRunner, this.gameMap);
+        console.log(this.gameRunner, this.gameMap, this.config);
       });
 
+    let commandsBucket = <CommandPair[]>[];
     this.commandsCollector$
-      .pipe(
-        bufferCount(2),
-        takeUntil(this.unsubscribe$),
-      )
-      .subscribe(commands => {
-        this.gameRunner.processRound(this.gameMap,
-          commands[0].first, commands[0].second,
-          commands[1].first, commands[1].second);
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(command => {
+        if (command.type === ActionsEnum.SELECT) {
+          commandsBucket = commandsBucket.filter(c => !(c.player === command.player && c.type === ActionsEnum.SELECT));
+        }
+        commandsBucket.push(command);
 
-        setTimeout(_ => this.refreshMap(), 0);
+        let commandsList = commandsBucket.map(cp => cp.toPair());
+
+        if (commandsBucket.filter(c => !c.command.includes('select')).length === 2) {
+          this.gameRunner.processRound(this.gameMap, commandsList);
+
+          commandsBucket = [];
+          setTimeout(_ => this.nextRound(), 0);
+        }
       });
+  }
+
+  private setMapStyle(map) {
+    let cellSize = 900 / map.size;
+    map.mapStyle = {
+      gridStyle: getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
+      cellSize,
+      powerupSize: `${cellSize * 0.7}px`,
+    };
   }
 
   doBotAction() {
@@ -83,65 +115,86 @@ export class GameEngineVisualiserComponent implements OnInit, OnDestroy {
       .filter(c => c.type.name$ === SurfaceTypeEnum.AIR);
     let commandCell = getRandomFromArray(nearCells);
 
-    this.commandsCollector$.next({first: this.player2, second: `move ${commandCell.x} ${commandCell.y}`});
+    this.commandsCollector$.next(new CommandPair(this.player2, `move ${commandCell.x} ${commandCell.y}`, ActionsEnum.MOVE));
   }
 
-  private refreshMap(): void {
+  private nextRound(): void {
     if (this.gameRunner.isGameComplete(this.gameMap)) {
       this.showEndGameDialog(``);
     }
 
     this.doBotAction();
+    this.refreshMap();
+  }
 
+  private refreshMap(): void {
     let currentWorm = this.player1.currentWorm;
     let bananaRange = this.config.agentWorms.bananas.range;
-    let wormOnTurnPosition = currentWorm.position;
-    let wormOnTurnCell = this.flatCells.find(c => c.x === wormOnTurnPosition.x && c.y === wormOnTurnPosition.y);
-    this.flatCells.forEach(c => c.isInDigMoveRange = c.isInBananaRange = false);
+    let wormOnTurnCell = this.flatCells.find(c => this.isSamePosition(c, currentWorm.position));
+    this.flatCells.forEach(c =>
+      c.isAllyWormCell
+        = c.isInDigMoveRange
+        = c.isInBananaRange
+        = false);
+
+    this.flatCells
+      .filter(c => this.player1.livingWorms.toArray().some(w => this.isSamePosition(c, w.position)))
+      .forEach(c => c.isAllyWormCell = true);
+
     this.getNearCells(wormOnTurnCell)
-      .filter(c => !(c.x === currentWorm.position.x && c.y === currentWorm.position.y))
+      .filter(c => !this.isSamePosition(c, currentWorm.position))
       .forEach(c => c.isInDigMoveRange = true);
 
     if (currentWorm.bananas && currentWorm.bananas.count) {
-      this.flatCells
-        .filter(c => this.shootingDistance(currentWorm.position, c) <= bananaRange
-          && !(c.x === currentWorm.position.x && c.y === currentWorm.position.y))
+      this.getNearCells(wormOnTurnCell, bananaRange)
+        .filter(c => !this.isSamePosition(c, currentWorm.position))
         .forEach(c => c.isInBananaRange = true);
     }
+  }
+
+  private isSamePosition(a: Position, b: Position) {
+    return a.x === b.x && a.y === b.y;
   }
 
   private shootingDistance(a: Position, b: Position) {
     return Math.floor(Math.hypot(b.x - a.x, b.y - a.y));
   }
 
-  private getNearCells(center: Position): MapCell[] {
-    return this.flatCells.filter(c => Math.abs(c.x - center.x) <= 1 && Math.abs(c.y - center.y) <= 1);
-  }
-
-  ngOnInit() {
+  private getNearCells(center: Position, range: number = 1): MapCell[] {
+    return this.flatCells.filter(c => this.shootingDistance(c, center) <= range);
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
   }
 
-  public doPlayerAction(cell: GridsCell, action: ActionsEnum) {
+  doPlayerAction(cell: MapCell, action: ActionsEnum) {
     switch (action) {
+      case ActionsEnum.NOTHING:
+        this.commandsCollector$.next(new CommandPair(this.player1, ActionsEnum.NOTHING, ActionsEnum.NOTHING));
+        break;
+
+      case ActionsEnum.SELECT:
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.SELECT} ${cell.x} ${cell.y}`, ActionsEnum.SELECT));
+        this.player1.currentWorm = cell.occupier;
+        this.refreshMap();
+        break;
+
       case ActionsEnum.DIG:
-        this.commandsCollector$.next({first: this.player1, second: `dig ${cell.x} ${cell.y}`});
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.DIG} ${cell.x} ${cell.y}`, ActionsEnum.DIG));
         break;
 
       case ActionsEnum.MOVE:
-        this.commandsCollector$.next({first: this.player1, second: `move ${cell.x} ${cell.y}`});
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.MOVE} ${cell.x} ${cell.y}`, ActionsEnum.MOVE));
         break;
 
       case ActionsEnum.SHOOT:
         let direction = this.getRelativeDirection(this.player1.currentWorm.position, cell);
-        this.commandsCollector$.next({first: this.player1, second: `shoot ${direction}`});
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.SHOOT} ${direction}`, ActionsEnum.SHOOT));
         break;
 
       case ActionsEnum.BANANA:
-        this.commandsCollector$.next({first: this.player1, second: `banana ${cell.x} ${cell.y}`});
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.BANANA} ${cell.x} ${cell.y}`, ActionsEnum.BANANA));
         break;
     }
   }
@@ -161,7 +214,7 @@ export class GameEngineVisualiserComponent implements OnInit, OnDestroy {
     });
   }
 
-  private getRelativeDirection(center: Position, cell: GridsCell) {
+  private getRelativeDirection(center: Position, cell: MapCell) {
     let directions = {
       E: [1, 0],
       NE: [1, -1],

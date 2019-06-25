@@ -67,8 +67,6 @@
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var toShort = Kotlin.toShort;
   var Random = Kotlin.kotlin.random.Random;
-  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
-  var mapOf = Kotlin.kotlin.collections.mapOf_qfcya0$;
   StandardCommandFeedback.prototype = Object.create(CommandFeedback.prototype);
   StandardCommandFeedback.prototype.constructor = StandardCommandFeedback;
   ShootCommandFeedback.prototype = Object.create(CommandFeedback.prototype);
@@ -1097,7 +1095,7 @@
   CommandParser.prototype.selectCommand_0 = function (splitCommand) {
     var tmp$;
     if (splitCommand.size !== 2) {
-      return new InvalidCommand('Cannot parse move command: Invalid length ' + splitCommand.size + ', expected 2');
+      return new InvalidCommand('Cannot parse select command: Invalid length ' + splitCommand.size + ', expected 2');
     }
     var wormId = toIntOrNull(splitCommand.get_za3lpa$(1));
     if (wormId == null) {
@@ -3478,9 +3476,44 @@
   GameRunner.prototype.isGameComplete = function (wormsMap) {
     return (new WormsEngine(this.config)).isGameComplete_xhsahe$(wormsMap);
   };
-  GameRunner.prototype.processRound = function (wormsMap, player1, player1Command, player2, player2Command) {
+  GameRunner.prototype.processRound = function (wormsMap, commandList) {
     var parser = new CommandParser(Random.Default, this.config);
-    var wormsCommands = mapOf([new Pair(player1, listOf_0(parser.parseCommand_61zpoe$(player1Command))), new Pair(player2, listOf_0(parser.parseCommand_61zpoe$(player2Command)))]);
+    var destination = LinkedHashMap_init();
+    var tmp$;
+    for (tmp$ = 0; tmp$ !== commandList.length; ++tmp$) {
+      var element = commandList[tmp$];
+      var key = element.first;
+      var tmp$_0;
+      var value = destination.get_11rb$(key);
+      if (value == null) {
+        var answer = ArrayList_init_0();
+        destination.put_xwzc9p$(key, answer);
+        tmp$_0 = answer;
+      }
+       else {
+        tmp$_0 = value;
+      }
+      var list = tmp$_0;
+      list.add_11rb$(element);
+    }
+    var destination_0 = LinkedHashMap_init_0(mapCapacity(destination.size));
+    var tmp$_1;
+    tmp$_1 = destination.entries.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      var tmp$_2 = destination_0.put_xwzc9p$;
+      var tmp$_3 = element_0.key;
+      var values = element_0.value;
+      var destination_1 = ArrayList_init(collectionSizeOrDefault(values, 10));
+      var tmp$_4;
+      tmp$_4 = values.iterator();
+      while (tmp$_4.hasNext()) {
+        var item = tmp$_4.next();
+        destination_1.add_11rb$(parser.parseCommand_61zpoe$(item.second));
+      }
+      tmp$_2.call(destination_0, tmp$_3, destination_1);
+    }
+    var wormsCommands = destination_0;
     return (new WormsRoundProcessor(this.config)).processRound_wfe2xc$(wormsMap, wormsCommands);
   };
   GameRunner.prototype.renderJson = function (map, player) {

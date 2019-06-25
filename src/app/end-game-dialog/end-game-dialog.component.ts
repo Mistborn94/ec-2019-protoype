@@ -12,7 +12,7 @@ class DialogData {
 })
 export class EndGameDialogComponent implements OnInit {
 
-  constructor(public dialogRef: MatDialogRef<EndGameDialogComponent>,
+  constructor(private dialogRef: MatDialogRef<EndGameDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: DialogData | any) {
   }
 

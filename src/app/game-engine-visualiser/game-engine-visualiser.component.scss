@@ -22,8 +22,8 @@
   border-radius: 20%;
 
   display: grid;
-  grid-template-rows: repeat(13, 70px); // Total rows/cols must fit the map config(x/y) settings
-  grid-template-columns: repeat(13, 70px);
+  //grid-template-rows: repeat(13, 70px); // Total rows/cols must fit the map config(x/y) settings
+  //grid-template-columns: repeat(13, 70px);
 
   place-content: center;
 }
@@ -59,6 +59,14 @@
   to {
     opacity: 1
   }
+}
+
+.self-commands {
+  @extend ._command-overlay;
+  background: linear-gradient(0deg, transparent 40%, #00ffff99, transparent 60%),
+  linear-gradient(90deg, transparent 40%, #00ffff99, transparent 60%);
+  width: 100%;
+  height: 100%;
 }
 
 .basic-commands {
@@ -116,20 +124,7 @@
 }
 
 .powerup {
-  background-color: maroon;
-  border-radius: 50%;
-
-  color: white;
-  place-self: center;
-  display: grid;
-
-  border: ridge 4px white;
-  width: 80%;
-  height: 80%;
-
-  mat-icon {
-    font-size: 55px;
-  }
+  justify-self: center;
 }
 
 .on-turn {
@@ -143,9 +138,9 @@
 
     $light-green: #47ff3f;
     $dark-green: #222d29;
-    background:
-      linear-gradient(45deg, transparent 40%, $dark-green 49%, $light-green 50%, $dark-green 51%, transparent 60%),
-    linear-gradient(-45deg, transparent 40%, $dark-green 49%, $light-green 50%, $dark-green 51%, transparent 60%);
+    background: linear-gradient(45deg, transparent 40%, $dark-green 49.7%, $light-green 49.7%, $light-green 50.3%, $dark-green 50.3%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, $dark-green 49.7%, $light-green 49.7%, $light-green 50.3%, $dark-green 50.3%, transparent 60%);
+    border-radius: 50%;
 
     animation: animateFlashingXScaleRotate 2000ms forwards,
     animateFlashingXOpacity 1500ms forwards;
@@ -166,7 +161,7 @@
     opacity: 0;
   }
   50% {
-    opacity: 1;
+    opacity: 0.5;
   }
   100% {
     opacity: 0;
