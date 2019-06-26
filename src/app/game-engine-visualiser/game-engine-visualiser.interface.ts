@@ -1,10 +1,27 @@
+export interface Dashboard {
+  players: DashboardPlayerDetails[];
+  currentRound: number;
+}
+
+interface DashboardPlayerDetails {
+  playerId: number;
+  health: number;
+  livingWormsCount: number;
+  totalScore: number;
+  wormSelectionTokens: number;
+  bananasCount: number;
+  activeWormImage: string;
+  roundErrors: any;
+}
+
 export interface MapCell extends Position {
-  occupier: Worm;
-  powerup: Powerup;
+  occupier?: Worm;
+  powerup?: Powerup;
   type: CellType;
   isAllyWormCell: boolean;
   isInDigMoveRange: boolean;
   isInBananaRange: boolean;
+  styleNumber: number;
 }
 
 interface CellType {
@@ -31,7 +48,7 @@ interface Worm {
   roundHit: number;
   roundMoved: number;
   weapon: Weapon;
-  bananas: Bananas;
+  bananas?: Bananas;
   dead: boolean;
   player: WormsPlayer;
   position: Position;
@@ -104,8 +121,11 @@ export interface GameMap {
   winningPlayer: WormsPlayer;
 
   applyHealthPacks(): any;
+
   detectRefereeIssues(): any;
+
   getRefereeIssues(): any;
+
   removeDeadWorms(): any;
 }
 
@@ -115,10 +135,15 @@ export interface GameRunner {
   seed: number;
 
   getGeneratedMap(): GameMap;
+
   isGameComplete(wormsMap): boolean;
+
   processRound(wormsMap, commandList: Pair<WormsPlayer, string>[]): boolean;
+
   renderJson(map, player): string;
+
   getErrorList(wormsMap, wormsPlayer): any[];
+
   getAllErrorList(wormsMap): GameMap;
 }
 

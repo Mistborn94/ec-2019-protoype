@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from 'src/app/end-game-dialog/end-game-dialog.component';
 import {
-  ActionsEnum,
+  ActionsEnum, Dashboard,
   GameConfig,
   GameMap,
   GameRunner,
@@ -15,7 +15,7 @@ import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { getArrayRange, getRandomFromArray } from '../common/utils';
+import { getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
 
 class CommandPair {
 
@@ -49,6 +49,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   player1: WormsPlayer;
   private player2: WormsPlayer;
   actionsEnum = ActionsEnum;
+  dashboard: Dashboard;
 
   private config: GameConfig;
   private gameRunner: GameRunner;
@@ -68,6 +69,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         this.gameMap = this.gameRunner.getGeneratedMap();
         this.setMapStyle(this.gameMap);
         this.flatCells = this.gameMap.cells.toArray();
+        this.flatCells.forEach(c => c.styleNumber = getRandomInteger(3));
 
         let playersList = this.gameMap.players.toArray();
         this.player1 = playersList[0];
@@ -98,6 +100,25 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       });
   }
 
+  private getDashBoard(): Dashboard {
+    return {
+      players: [this.player1, this.player2].map(p => ({
+        playerId: p.id,
+        health: p.health,
+        livingWormsCount: p.livingWorms.toArray().length,
+        totalScore: p.totalScore,
+        wormSelectionTokens: p.wormSelectionTokens,
+        bananasCount: p.livingWorms.toArray()
+            .map(w => w.bananas ? w.bananas.count : null)
+            .filter(count => count !== null)[0]
+          || 0,
+        activeWormImage: `${p.id}${p.currentWorm.id}`,
+        roundErrors: this.gameRunner.getErrorList(this.gameMap, p),
+      })),
+      currentRound: this.gameMap.currentRound,
+    };
+  }
+
   private setMapStyle(map) {
     let cellSize = 900 / map.size;
     map.mapStyle = {
@@ -112,7 +133,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     // TODO: send to bot file
 
     let nearCells = this.getNearCells(<Position>this.player2.currentWorm.position)
-      .filter(c => c.type.name$ === SurfaceTypeEnum.AIR);
+      .filter(c => c.type.name$ === SurfaceTypeEnum.AIR && !this.isSamePosition(c, this.player2.currentWorm.position));
     let commandCell = getRandomFromArray(nearCells);
 
     this.commandsCollector$.next(new CommandPair(this.player2, `move ${commandCell.x} ${commandCell.y}`, ActionsEnum.MOVE));
@@ -128,6 +149,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   private refreshMap(): void {
+    this.dashboard = this.getDashBoard();
+
     let currentWorm = this.player1.currentWorm;
     let bananaRange = this.config.agentWorms.bananas.range;
     let wormOnTurnCell = this.flatCells.find(c => this.isSamePosition(c, currentWorm.position));
@@ -230,5 +253,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       .find(key => directions[key][0] === cell.x - center.x
         && directions[key][1] === cell.y - center.y);
   }
+
+
 }
 

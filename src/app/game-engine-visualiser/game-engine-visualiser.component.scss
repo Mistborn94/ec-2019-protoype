@@ -10,6 +10,10 @@
   overflow: hidden;
 }
 
+.dashboard-container {
+  display: grid;
+}
+
 .player-details-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -22,9 +26,6 @@
   border-radius: 20%;
 
   display: grid;
-  //grid-template-rows: repeat(13, 70px); // Total rows/cols must fit the map config(x/y) settings
-  //grid-template-columns: repeat(13, 70px);
-
   place-content: center;
 }
 
@@ -142,8 +143,8 @@
     linear-gradient(-45deg, transparent 40%, $dark-green 49.7%, $light-green 49.7%, $light-green 50.3%, $dark-green 50.3%, transparent 60%);
     border-radius: 50%;
 
-    animation: animateFlashingXScaleRotate 2000ms forwards,
-    animateFlashingXOpacity 1500ms forwards;
+    animation: animateFlashingXScaleRotate 1500ms forwards,
+    animateFlashingXOpacity 1200ms forwards;
   }
 }
 
@@ -212,62 +213,22 @@
   background-color: #2f2f2f;
 }
 
-.DEEP_SPACE0 {
-  @extend .DEEP_SPACE;
-  transform: rotate(0deg);
+$versions-count: 3;
+@mixin _texture-styles-classes {
+  @for $i from 0 through $versions-count {
+    .DEEP_SPACE#{$i} {
+      @extend .DEEP_SPACE;
+      transform: rotate(#{$i*90}deg);
+    }
+    .DIRT#{$i} {
+      @extend .DIRT;
+      transform: rotate(#{$i*90}deg);
+    }
+    .AIR#{$i} {
+      @extend .AIR;
+      transform: rotate(#{$i*90}deg);
+    }
+  }
 }
 
-.DEEP_SPACE1 {
-  @extend .DEEP_SPACE;
-  transform: rotate(90deg);
-}
-
-.DEEP_SPACE2 {
-  @extend .DEEP_SPACE;
-  transform: rotate(180deg);
-}
-
-.DEEP_SPACE3 {
-  @extend .DEEP_SPACE;
-  transform: rotate(270deg);
-}
-
-.DIRT0 {
-  @extend .DIRT;
-  transform: rotate(0deg);
-}
-
-.DIRT1 {
-  @extend .DIRT;
-  transform: rotate(90deg);
-}
-
-.DIRT2 {
-  @extend .DIRT;
-  transform: rotate(180deg);
-}
-
-.DIRT3 {
-  @extend .DIRT;
-  transform: rotate(270deg);
-}
-
-.AIR0 {
-  @extend .AIR;
-  transform: rotate(0deg);
-}
-
-.AIR1 {
-  @extend .AIR;
-  transform: rotate(90deg);
-}
-
-.AIR2 {
-  @extend .AIR;
-  transform: rotate(180deg);
-}
-
-.AIR3 {
-  @extend .AIR;
-  transform: rotate(270deg);
-}
+@include _texture-styles-classes;
