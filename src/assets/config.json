@@ -7,7 +7,7 @@
     "movementRage": 1,
     "diggingRange": 1,
     "weapon": {
-      "damage": 8,
+      "damage": 30,
       "range": 4
     },
     "professionName": "Commando"
@@ -18,12 +18,12 @@
     "movementRage": 1,
     "diggingRange": 1,
     "weapon": {
-      "damage": 8,
+      "damage": 30,
       "range": 4
     },
     "bananas": {
-      "damage": 20,
-      "range": 5,
+      "damage": 80,
+      "range": 3,
       "count": 3,
       "damageRadius": 2
     },

@@ -1,14 +1,30 @@
-export interface MapCell {
-  occupier: Worm;
-  powerup: Powerup;
-  type: CellType;
-  x: number;
-  y: number;
-  isInDigMoveRange: boolean;
-  isAttackable: boolean;
+export interface Dashboard {
+  players: DashboardPlayerDetails[];
+  currentRound: number;
 }
 
-export interface CellType {
+interface DashboardPlayerDetails {
+  playerId: number;
+  health: number;
+  livingWormsCount: number;
+  totalScore: number;
+  wormSelectionTokens: number;
+  bananasCount: number;
+  activeWormImage: string;
+  roundErrors: any;
+}
+
+export interface MapCell extends Position {
+  occupier?: Worm;
+  powerup?: Powerup;
+  type: CellType;
+  isAllyWormCell: boolean;
+  isInDigMoveRange: boolean;
+  isInBananaRange: boolean;
+  styleNumber: number;
+}
+
+interface CellType {
   name$: string;
 }
 
@@ -18,19 +34,23 @@ interface Weapon {
 }
 
 interface Bananas {
+  damage: number;
+  range: number;
+  count: number;
+  damageRadius: number;
 }
 
-export interface Worm {
+interface Worm {
+  id: number;
   diggingRange: number;
   health: number;
-  id: number;
   movementRange: number;
   roundHit: number;
   roundMoved: number;
   weapon: Weapon;
-  bananas: Bananas;
+  bananas?: Bananas;
   dead: boolean;
-  player: Player;
+  player: WormsPlayer;
   position: Position;
   previousPosition: Position;
 }
@@ -45,13 +65,13 @@ export interface Pair<T, U> {
   second: U;
 }
 
-export interface Powerup {
-  type: string;
-  value: number;
+interface KotlinList<T> {
+  toArray(): T[];
 }
 
-export interface Player {
-  id: string;
+interface Powerup {
+  type: string;
+  value: number;
 }
 
 export enum SurfaceTypeEnum {
@@ -61,65 +81,83 @@ export enum SurfaceTypeEnum {
 }
 
 export enum ActionsEnum {
+  NOTHING = 'nothing',
+  SELECT = 'select',
   MOVE = 'move',
   DIG = 'dig',
   SHOOT = 'shoot',
   BANANA = 'banana',
 }
 
-export class NearCells {
-  above: GridsCell;
-  below: GridsCell;
-  left: GridsCell;
-  right: GridsCell;
-
-  constructor(nearCells: NearCells = <NearCells>{}) {
-    this.above = nearCells.above;
-    this.below = nearCells.below;
-    this.left = nearCells.left;
-    this.right = nearCells.right;
-  }
-
-  /**
-   * Returns an array of existing neighbouring cells in cardinal directions
-   * @returns {GridsCell[]}
-   */
-  cardinalList() {
-    return [this.above, this.below, this.left, this.right].filter(gc => gc !== undefined);
-  }
-}
-
-export class GridsCell {
-  x: number;
-  y: number;
-  type: SurfaceTypeEnum;
-  occupier: OldWorm;
-  isInDigMoveRange: boolean;
-  isInBananaRange: boolean;
-}
-
-export class GridsRow {
-  columns: GridsCell[];
-}
-
-export class WormsPlayer {
+export interface WormsPlayer {
+  id: 1;
   commandScore: number;
   consecutiveDoNothingsCount: number;
   currentWorm: Worm;
-  id: 1;
   previousWorm: Worm;
-  wormSelectionTokens: 5;
+  wormSelectionTokens: number;
   worms: Worm[];
   dead: boolean;
   disqualified: boolean;
   health: number;
-  livingWorms: Worm[];
+  livingWorms: KotlinList<Worm>;
   totalScore: number;
 }
 
-export class OldWorm {
-  id: number;
-  score = 0;
-  x: number;
-  y: number;
+interface MapStyle {
+  gridStyle: string;
+  cellSize: number;
+  powerupSize: string;
 }
+
+export interface GameMap {
+  size: number;
+  mapStyle: MapStyle;
+  cells: KotlinList<MapCell>;
+  currentRound: number;
+  currentRoundErrors: any;
+  livingPlayers: KotlinList<WormsPlayer>;
+  players: KotlinList<WormsPlayer>;
+  winningPlayer: WormsPlayer;
+
+  applyHealthPacks(): any;
+
+  detectRefereeIssues(): any;
+
+  getRefereeIssues(): any;
+
+  removeDeadWorms(): any;
+}
+
+export interface GameRunner {
+  config: GameConfig;
+  playerCount: number;
+  seed: number;
+
+  getGeneratedMap(): GameMap;
+
+  isGameComplete(wormsMap): boolean;
+
+  processRound(wormsMap, commandList: Pair<WormsPlayer, string>[]): boolean;
+
+  renderJson(map, player): string;
+
+  getErrorList(wormsMap, wormsPlayer): any[];
+
+  getAllErrorList(wormsMap): GameMap;
+}
+
+export interface GameConfig {
+  agentWorms: any;
+  commandoWorms: any;
+  csvSeparator: string;
+  healthPackHp: number;
+  mapSize: number;
+  maxDoNothings: number;
+  maxRounds: number;
+  pushbackDamage: number;
+  scores: any;
+  totalHealthPacks: number;
+  wormSelectTokens: any;
+}
+

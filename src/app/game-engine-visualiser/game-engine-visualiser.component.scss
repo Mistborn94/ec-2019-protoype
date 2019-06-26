@@ -6,6 +6,12 @@
   display: grid;
   grid-template-columns: auto auto;
   grid-gap: 8px;
+
+  overflow: hidden;
+}
+
+.dashboard-container {
+  display: grid;
 }
 
 .player-details-container {
@@ -20,9 +26,6 @@
   border-radius: 20%;
 
   display: grid;
-  grid-template-rows: repeat(13, 70px); // Total rows/cols must fit the map config(x/y) settings
-  grid-template-columns: repeat(13, 70px);
-
   place-content: center;
 }
 
@@ -37,18 +40,64 @@
   place-content: center;
 
   color: #F5F5F5;
+
+  position: relative;
+}
+
+._command-overlay {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  place-self: center;
+
+  animation: transparentToVisible 750ms forwards;
+}
+
+@keyframes transparentToVisible {
+  from {
+    opacity: 0
+  }
+  to {
+    opacity: 1
+  }
+}
+
+.self-commands {
+  @extend ._command-overlay;
+  background: linear-gradient(0deg, transparent 40%, #00ffff99, transparent 60%),
+  linear-gradient(90deg, transparent 40%, #00ffff99, transparent 60%);
+  width: 100%;
+  height: 100%;
+}
+
+.basic-commands {
+  @extend ._command-overlay;
+  background-color: transparentize(red, 0.6);
+  transform: rotate(45deg);
+}
+
+.banana-command {
+  @extend ._command-overlay;
+  background-color: transparentize(yellow, 0.6);
+  border-radius: 50%;
 }
 
 .action-icon {
-    font-size: 40px;
-    height: 40px;
+  font-size: 40px;
+  height: 40px;
 }
 
-::ng-deep .mat-menu-panel {
-  min-width: unset !important;
+::ng-deep {
+  .mat-menu-panel {
+    min-width: unset !important;
+
+    button {
+      height: 60px;
+    }
+  }
 }
 
-.cell-container {
+.overlap-container {
   display: grid;
   grid-template-areas: 'overlap';
 
@@ -62,32 +111,62 @@
   transition: filter 500ms;
 
   &:hover {
-    filter: brightness(1.25);
+    filter: brightness(1.35);
   }
 }
 
 .occupant {
-  height: 75%;
-  place-self: center;
-}
-
-.powerup {
-  background-color: maroon;
-  border-radius: 50%;
-
-  color: white;
-  place-self: center;
   display: grid;
-  width: 100%;
-  height: 100%;
+  place-items: center;
 
-  mat-icon {
-    font-size: 70px;
+  img {
+    width: 75%;
   }
 }
 
+.powerup {
+  justify-self: center;
+}
+
 .on-turn {
-  animation: animateVerticalAlignment 1500ms ease infinite;
+  img {
+    animation: animateJump 2000ms infinite;
+  }
+
+  .flashing-x {
+    width: 100%;
+    height: 100%;
+
+    $light-green: #47ff3f;
+    $dark-green: #222d29;
+    background: linear-gradient(45deg, transparent 40%, $dark-green 49.7%, $light-green 49.7%, $light-green 50.3%, $dark-green 50.3%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, $dark-green 49.7%, $light-green 49.7%, $light-green 50.3%, $dark-green 50.3%, transparent 60%);
+    border-radius: 50%;
+
+    animation: animateFlashingXScaleRotate 1500ms forwards,
+    animateFlashingXOpacity 1200ms forwards;
+  }
+}
+
+@keyframes animateFlashingXScaleRotate {
+  0% {
+    transform: scale(10) rotate(0deg);
+  }
+  100% {
+    transform: scale(0.6) rotate(180deg);
+  }
+}
+
+@keyframes animateFlashingXOpacity {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes animateOpacity {
@@ -102,15 +181,15 @@
   }
 }
 
-@keyframes animateVerticalAlignment {
+@keyframes animateJump {
   0% {
-    transform: translateY(0px)
+    transform: translateY(0px) scale(1);
   }
   7% {
-    transform: translateY(-7px)
+    transform: translateY(-7px) scale(1.1)
   }
   14% {
-    transform: translateY(0px)
+    transform: translateY(0px) scale(1)
   }
 }
 
@@ -134,62 +213,22 @@
   background-color: #2f2f2f;
 }
 
-.DEEP_SPACE0 {
-  @extend .DEEP_SPACE;
-  transform: rotate(0deg);
+$versions-count: 3;
+@mixin _texture-styles-classes {
+  @for $i from 0 through $versions-count {
+    .DEEP_SPACE#{$i} {
+      @extend .DEEP_SPACE;
+      transform: rotate(#{$i*90}deg);
+    }
+    .DIRT#{$i} {
+      @extend .DIRT;
+      transform: rotate(#{$i*90}deg);
+    }
+    .AIR#{$i} {
+      @extend .AIR;
+      transform: rotate(#{$i*90}deg);
+    }
+  }
 }
 
-.DEEP_SPACE1 {
-  @extend .DEEP_SPACE;
-  transform: rotate(90deg);
-}
-
-.DEEP_SPACE2 {
-  @extend .DEEP_SPACE;
-  transform: rotate(180deg);
-}
-
-.DEEP_SPACE3 {
-  @extend .DEEP_SPACE;
-  transform: rotate(270deg);
-}
-
-.DIRT0 {
-  @extend .DIRT;
-  transform: rotate(0deg);
-}
-
-.DIRT1 {
-  @extend .DIRT;
-  transform: rotate(90deg);
-}
-
-.DIRT2 {
-  @extend .DIRT;
-  transform: rotate(180deg);
-}
-
-.DIRT3 {
-  @extend .DIRT;
-  transform: rotate(270deg);
-}
-
-.AIR0 {
-  @extend .AIR;
-  transform: rotate(0deg);
-}
-
-.AIR1 {
-  @extend .AIR;
-  transform: rotate(90deg);
-}
-
-.AIR2 {
-  @extend .AIR;
-  transform: rotate(180deg);
-}
-
-.AIR3 {
-  @extend .AIR;
-  transform: rotate(270deg);
-}
+@include _texture-styles-classes;

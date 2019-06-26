@@ -1,103 +1,130 @@
 <div class="screen-container">
 
-  <div>
+  <div style="width: 700px">
     <mat-card>
-      <h1>winningPlayer {{gameMap?.winningPlayer}}</h1>
-      <h1>wormOnTurn {{player1?.currentWorm?.id}}</h1>
+      <div class="dashboard-container">
+        <ng-container *ngFor="let details of dashboard?.players">
+          <div>Player {{details.playerId}}</div>
+          <div>health: {{details.health}}</div>
+          <div>livingWorms: {{details.livingWormsCount}}</div>
+          <div>totalScore: {{details.totalScore}}</div>
+          <div>wormSelectionTokens: {{details.wormSelectionTokens}}</div>
+          <div>bananasCount: {{details.bananasCount}}</div>
+          <div>roundErrors: {{details.roundErrors}}</div>
+          <img class="overlap" [style.height]="gameMap?.mapStyle.cellSize + 'px'"
+               style="    background: radial-gradient(gray, transparent 77%);"
+               [src]="'../../../../assets/worm' + details.activeWormImage + '.png'"/>
+          <br>
+        </ng-container>
 
-      <h4>Round {{gameMap?.currentRound}}</h4>
-      <!--      <h2>Player <b>{{player1?.name}}</b>, move it!</h2>-->
-      <br>
-
-      <div *ngFor="let p of []">
-        <div class="player-details-container">
-          <span>{{p?.name}}<span *ngIf="player1 === p">
-            <mat-icon class="hot">notification_important</mat-icon></span></span>
-          <span> <mat-icon>local_hospital</mat-icon>
-            {{p?.hitPoints}} </span>
-          <span>
-            <mat-icon>monetization_on</mat-icon>
-            {{p?.resources}} </span>
-          <span> <mat-icon>score</mat-icon>
-            {{p?.score}} </span>
-          <span [ngClass]="p?.activeEffect?.type">{{p?.activeEffect?.type}} </span>
-          <span> <mat-icon>access_time</mat-icon>
-            {{p?.activeEffect?.timeLeft}} </span>
-
-        </div>
+        <div>round {{dashboard?.currentRound}}</div>
       </div>
     </mat-card>
   </div>
 
+  <div class="map-container"
+       [style.grid-template-rows]="gameMap?.mapStyle.gridStyle"
+       [style.grid-template-columns]="gameMap?.mapStyle.gridStyle">
 
-  <div class="map-container">
-    <ng-container *ngFor="let row of rows">
-      <ng-container *ngFor="let cell of row.columns">
+    <ng-container *ngFor="let cell of flatCells">
 
-        <div class="cell-container"
-             [class.hover-action-clickable]="cell.isInDigMoveRange || cell.isInBananaRange">
+      <div class="overlap-container"
+           [class.hover-action-clickable]="cell.isAllyWormCell
+                                           || cell.isInDigMoveRange
+                                           || cell.isInBananaRange">
 
-          <div *ngIf="cell.isInDigMoveRange || cell.isInBananaRange"
-               class="square overlap action-menu"
-               [matMenuTriggerFor]="actionsMenu"
-               style="z-index: 5; color: red">
-            * <!--action marker-->
-            <mat-menu #actionsMenu="matMenu">
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
-                      mat-menu-item
-                      title="Move here"
-                      (click)="doPlayerAction(cell, actionsEnum.MOVE)">
-                <mat-icon class="action-icon">directions_run</mat-icon>
-              </button>
+        <div *ngIf="cell.isAllyWormCell
+                    || cell.isInDigMoveRange
+                    || cell.isInBananaRange"
+             class="square overlap"
+             [matMenuTriggerFor]="actionsMenu"
+             [style.z-index]="5">
 
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'DIRT'"
-                      mat-menu-item
-                      title="Dig here"
-                      (click)="doPlayerAction(cell, actionsEnum.DIG)">
-                <mat-icon class="action-icon"
-                          style="transform: rotate(-50deg);">rowing</mat-icon>
-              </button>
+          <div *ngIf="cell.isAllyWormCell && cell.occupier !== player1.currentWorm;
+                      else cell.isInDigMoveRange ? basicIndicator
+                      : cell.isInBananaRange ? bananaIndicator : ''"
+               class="self-commands"></div>
+          <ng-template #basicIndicator>
+            <div class="basic-commands"></div>
+          </ng-template>
+          <ng-template #bananaIndicator>
+            <div class="banana-command"></div>
+          </ng-template>
 
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
-                      mat-menu-item
-                      title="Shoot in this direction"
-                      (click)="doPlayerAction(cell, actionsEnum.SHOOT)">
-                <mat-icon class="action-icon">my_location</mat-icon>
-              </button>
+          <mat-menu #actionsMenu="matMenu">
+            <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
+                    mat-menu-item
+                    title="Move here"
+                    (click)="doPlayerAction(cell, actionsEnum.MOVE)">
+              <div class="action-icon">🏃‍♀️</div>
+            </button>
 
-              <button *ngIf="cell.isInBananaRange"
-                      mat-menu-item
-                      title="Throw Banana Bomb here"
-                      (click)="doPlayerAction(cell, actionsEnum.BANANA)">
-                <mat-icon class="action-icon">wifi_tethering</mat-icon>
-              </button>
+            <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'DIRT'"
+                    mat-menu-item
+                    title="Dig here"
+                    (click)="doPlayerAction(cell, actionsEnum.DIG)">
+              <div class="action-icon">⛏</div>
+            </button>
 
-            </mat-menu>
-          </div>
+            <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
+                    mat-menu-item
+                    title="Shoot in this direction"
+                    (click)="doPlayerAction(cell, actionsEnum.SHOOT)">
+              <div class="action-icon">🔫</div>
+            </button>
 
-          <img *ngIf="cell.occupier"
-               class="occupant overlap"
-               [class.on-turn]="cell.occupier.id === player1"
-               style="z-index: 3"
-               [title]="'Player ' + cell.occupier.player.id"
-               [src]="'../../../../assets/worm' + cell.occupier.player.id + cell.occupier.id + '.png'"/>
+            <button *ngIf="cell.isInBananaRange"
+                    mat-menu-item
+                    title="Throw Banana Bomb here"
+                    (click)="doPlayerAction(cell, actionsEnum.BANANA)">
+              <div class="action-icon">🍌</div>
+            </button>
 
-          <div *ngIf="cell.powerup"
-               class="powerup overlap"
-               style="z-index: 2"
-               [title]="'Health'">
-            <mat-icon>local_hospital</mat-icon>
-          </div>
+            <button *ngIf="cell.isAllyWormCell && cell.occupier === player1.currentWorm"
+                    mat-menu-item
+                    title="Do nothing for this round"
+                    (click)="doPlayerAction(cell, actionsEnum.NOTHING)">
+              <div class="action-icon">🤷‍♀️</div>
+            </button>
 
-          <div class="square overlap"
-               [ngClass]="cell.type.name$ + (cell.x + cell.y) % 4"
-               style="z-index: 1">
-          </div>
+            <button *ngIf="cell.isAllyWormCell
+                          && cell.occupier !== player1.currentWorm
+                          && player1.wormSelectionTokens > 0"
+                    mat-menu-item
+                    title="Select this worm"
+                    (click)="doPlayerAction(cell, actionsEnum.SELECT)">
+              <div class="action-icon">👈</div>
+            </button>
+          </mat-menu>
         </div>
 
-      </ng-container>
-    </ng-container>
+        <div *ngIf="cell.occupier"
+             class="occupant overlap overlap-container"
+             [style.z-index]="3"
+             [title]="'Player ' + cell.occupier.player.id"
+             [class.on-turn]="cell.occupier === player1.currentWorm
+                                && cell.occupier.player.id === player1.id">
+          <div class="flashing-x overlap" [style.z-index]="5"></div>
+          <img class="overlap"
+               [src]="'../../../../assets/worm' + cell.occupier.player.id + cell.occupier.id + '.png'"/>
+        </div>
 
+        <div *ngIf="cell.powerup"
+             class="powerup overlap"
+             [style.z-index]="2"
+             [title]="'Health'"
+             [style.height]="gameMap?.mapStyle?.powerupSize"
+             [style.font-size]="gameMap?.mapStyle?.powerupSize">
+          🍕
+        </div>
+
+        <div class="square overlap"
+             [ngClass]="cell.type.name$ + cell.styleNumber"
+             [style.z-index]="1">
+        </div>
+      </div>
+
+    </ng-container>
 
   </div>
 </div>
