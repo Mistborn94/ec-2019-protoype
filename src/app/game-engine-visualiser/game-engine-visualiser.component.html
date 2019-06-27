@@ -1,25 +1,26 @@
+<div class="background">
+  <div></div>
+</div>
+
 <div class="screen-container">
 
-  <div style="width: 700px">
-    <mat-card>
-      <div class="dashboard-container">
-        <ng-container *ngFor="let details of dashboard?.players">
-          <div>Player {{details.playerId}}</div>
-          <div>health: {{details.health}}</div>
-          <div>livingWorms: {{details.livingWormsCount}}</div>
-          <div>totalScore: {{details.totalScore}}</div>
-          <div>wormSelectionTokens: {{details.wormSelectionTokens}}</div>
-          <div>bananasCount: {{details.bananasCount}}</div>
-          <div>roundErrors: {{details.roundErrors}}</div>
-          <img class="overlap" [style.height]="gameMap?.mapStyle.cellSize + 'px'"
-               style="    background: radial-gradient(gray, transparent 77%);"
-               [src]="'../../../../assets/worm' + details.activeWormImage + '.png'"/>
-          <br>
-        </ng-container>
+  <div style="width: 700px"
+       class="dashboard-container">
 
-        <div>round {{dashboard?.currentRound}}</div>
-      </div>
-    </mat-card>
+    <div *ngFor="let details of dashboard?.players" class="dashboard-details">
+      <div>Player {{details.playerId}}</div>
+      <div>health: {{details.health}}</div>
+      <div>livingWorms: {{details.livingWormsCount}}</div>
+      <div>totalScore: {{details.totalScore}}</div>
+      <div>wormSelectionTokens: {{details.wormSelectionTokens}}</div>
+      <div>bananasCount: {{details.bananasCount}}</div>
+      <div>roundErrors: {{details.roundErrors}}</div>
+      <img class="overlap" [style.height]="gameMap?.mapStyle.cellSize + 'px'"
+           style="    background: radial-gradient(gray, transparent 77%);"
+           [src]="'../../../../assets/worm' + details.activeWormImage + '.png'"/>
+    </div>
+
+    <div>round {{dashboard?.currentRound}}</div>
   </div>
 
   <div class="map-container"
@@ -77,7 +78,7 @@
                     mat-menu-item
                     title="Throw Banana Bomb here"
                     (click)="doPlayerAction(cell, actionsEnum.BANANA)">
-              <div class="action-icon">🍌</div>
+              <div class="action-icon">💣</div>
             </button>
 
             <button *ngIf="cell.isAllyWormCell && cell.occupier === player1.currentWorm"
@@ -98,16 +99,19 @@
           </mat-menu>
         </div>
 
-        <div *ngIf="cell.occupier"
+        <ng-container *ngIf="cell.occupier && cell.occupier === player1.currentWorm
+                                           && cell.occupier.player.id === player1.id">
+          <div [style.z-index]="6" class="selector-corners-shadow overlap"></div>
+          <div [style.z-index]="7" class="selector-corners-real overlap"></div>
+        </ng-container>
+
+        <img *ngIf="cell.occupier"
              class="occupant overlap overlap-container"
              [style.z-index]="3"
              [title]="'Player ' + cell.occupier.player.id"
              [class.on-turn]="cell.occupier === player1.currentWorm
-                                && cell.occupier.player.id === player1.id">
-          <div class="flashing-x overlap" [style.z-index]="5"></div>
-          <img class="overlap"
-               [src]="'../../../../assets/worm' + cell.occupier.player.id + cell.occupier.id + '.png'"/>
-        </div>
+                                && cell.occupier.player.id === player1.id"
+             [src]="'../../../../assets/worm' + cell.occupier.player.id + cell.occupier.id + '.png'"/>
 
         <div *ngIf="cell.powerup"
              class="powerup overlap"
@@ -118,7 +122,7 @@
           🍕
         </div>
 
-        <div class="square overlap"
+        <div class="square texture overlap"
              [ngClass]="cell.type.name$ + cell.styleNumber"
              [style.z-index]="1">
         </div>
