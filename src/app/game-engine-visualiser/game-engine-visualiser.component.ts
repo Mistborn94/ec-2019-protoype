@@ -2,11 +2,13 @@ import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from 'src/app/end-game-dialog/end-game-dialog.component';
 import {
-  ActionsEnum, Dashboard,
+  ActionsEnum,
+  Dashboard,
   GameConfig,
   GameMap,
   GameRunner,
-  MapCell, Pair,
+  MapCell,
+  Pair,
   Position,
   SurfaceTypeEnum,
   WormsPlayer,
@@ -51,6 +53,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   actionsEnum = ActionsEnum;
   dashboard: Dashboard;
 
+  isPaused: boolean;
+
   private config: GameConfig;
   private gameRunner: GameRunner;
   gameMap: GameMap;
@@ -61,11 +65,17 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
   constructor(private dialog: MatDialog,
               private http: HttpClient) {
+    this.initializeNewGame();
+  }
+
+  private initializeNewGame() {
+    this.unsubscribe$.next();
+
     this.http.get('assets/config.json')
       .subscribe((item: any) => {
         this.config = item;
 
-        this.gameRunner = new ec2019.GameRunner(0, this.config, 2);
+        this.gameRunner = new ec2019.GameRunner(getRandomInteger(999), this.config, 2);
         this.gameMap = this.gameRunner.getGeneratedMap();
         this.setMapStyle(this.gameMap);
         this.flatCells = this.gameMap.cells.toArray();
@@ -114,6 +124,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
           || 0,
         activeWormImage: `${p.id}${p.currentWorm.id}`,
         roundErrors: this.gameRunner.getErrorList(this.gameMap, p),
+        worms: p.worms.toArray(),
       })),
       currentRound: this.gameMap.currentRound,
     };
@@ -141,7 +152,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
   private nextRound(): void {
     if (this.gameRunner.isGameComplete(this.gameMap)) {
-      this.showEndGameDialog(``);
+      this.showEndGameDialog();
     }
 
     this.doBotAction();
@@ -222,18 +233,23 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     }
   }
 
-  private showEndGameDialog(message: string) {
+  private showEndGameDialog() {
+    this.isPaused = true;
     // https://github.com/angular/material2/issues/5268
     // TODO: work-around for expression change on dialog factory
     setTimeout(() => {
       this.dialog.open(EndGameDialogComponent, {
         data: {
-          players: []/*this.players*/,
-          message: message,
+          players: [],
+          message: this.gameMap.winningPlayer == this.player1 ? 'You won!!! 🥳' : 'How about another try?🥺',
+          gameMape: this.gameMap,
         },
       })
         .afterClosed()
-        .subscribe();
+        .subscribe(() => {
+          this.initializeNewGame();
+          this.isPaused = false;
+        });
     });
   }
 
@@ -254,6 +270,9 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         && directions[key][1] === cell.y - center.y);
   }
 
-
+  cheatKillPlayer2() {
+    this.player2.worms.toArray().forEach(w => w.health = 0);
+    this.doPlayerAction(null, ActionsEnum.NOTHING);
+  }
 }
 

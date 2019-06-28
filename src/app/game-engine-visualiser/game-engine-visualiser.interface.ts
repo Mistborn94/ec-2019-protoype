@@ -12,6 +12,7 @@ interface DashboardPlayerDetails {
   bananasCount: number;
   activeWormImage: string;
   roundErrors: any;
+  worms: Worm[];
 }
 
 export interface MapCell extends Position {
@@ -53,6 +54,7 @@ interface Worm {
   player: WormsPlayer;
   position: Position;
   previousPosition: Position;
+  profession: string;
 }
 
 export interface Position {
@@ -96,7 +98,7 @@ export interface WormsPlayer {
   currentWorm: Worm;
   previousWorm: Worm;
   wormSelectionTokens: number;
-  worms: Worm[];
+  worms: KotlinList<Worm>;
   dead: boolean;
   disqualified: boolean;
   health: number;
