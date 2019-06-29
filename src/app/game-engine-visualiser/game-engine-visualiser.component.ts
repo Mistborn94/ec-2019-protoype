@@ -8,7 +8,6 @@ import {
   GameMap,
   GameRunner,
   MapCell,
-  Pair,
   Position,
   SurfaceTypeEnum,
   WormsPlayer,
@@ -18,28 +17,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
-
-class CommandPair {
-
-  player: WormsPlayer;
-  command: string;
-  type: ActionsEnum;
-
-  constructor(player: WormsPlayer, command: string, type: ActionsEnum) {
-    this.player = player;
-    this.command = command;
-    this.type = type;
-  }
-
-  static fromCommandPair(commandPair: CommandPair): CommandPair {
-    return new CommandPair(commandPair.player, commandPair.command, commandPair.type);
-  }
-
-  toPair(): Pair<WormsPlayer, string> {
-    return {first: this.player, second: this.command};
-  }
-
-}
+import { CommandPair } from './command-pair';
 
 @Component({
   selector: 'app-game-engine-visualiser',
@@ -184,6 +162,41 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         .filter(c => !this.isSamePosition(c, currentWorm.position))
         .forEach(c => c.isInBananaRange = true);
     }
+
+    let state = this.gameRunner.renderJson(this.gameMap, this.player2);
+    // JSON.parse(state)
+    //   .visualizerEvents
+    [{
+      type: 'used-banana-bomb',
+      details: {
+        positionStart: {
+          x: 3,
+          y: 3,
+        },
+        positionEnd: {
+          x: 5,
+          y: 5,
+        },
+      },
+    },
+      {
+        type: 'used-shoot',
+        details: {
+          positionStart: {
+            x: 3,
+            y: 3,
+          },
+          positionEnd: {
+            x: 5,
+            y: 5,
+          },
+        },
+      }]
+      .forEach(e => {
+        this.flatCells.find(c => this.isSamePosition(c, e.details.positionEnd))
+          .event = e;
+      });
+
   }
 
   private isSamePosition(a: Position, b: Position) {
@@ -241,7 +254,9 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       this.dialog.open(EndGameDialogComponent, {
         data: {
           players: [],
-          message: this.gameMap.winningPlayer == this.player1 ? 'You won!!! 🥳' : 'How about another try?🥺',
+          message: this.gameMap.winningPlayer == this.player1
+            ? 'You won!!! 🥳'
+            : 'How about another try?🥺',
           gameMape: this.gameMap,
         },
       })

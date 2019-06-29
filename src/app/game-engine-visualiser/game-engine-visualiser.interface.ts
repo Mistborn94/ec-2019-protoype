@@ -23,6 +23,12 @@ export interface MapCell extends Position {
   isInDigMoveRange: boolean;
   isInBananaRange: boolean;
   styleNumber: number;
+  event: VisualizerEvent;
+}
+
+interface VisualizerEvent {
+  type: string;
+  details: any;
 }
 
 interface CellType {

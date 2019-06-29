@@ -361,5 +361,9 @@ $versions-count: 3;
     }
   }
 }
-
 @include _texture-styles-classes;
+
+.explosion {
+  background-image: url('../../assets/big-explosion.gif');
+  background-size: cover;
+}

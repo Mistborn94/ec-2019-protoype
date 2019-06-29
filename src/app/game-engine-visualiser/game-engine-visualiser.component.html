@@ -58,7 +58,7 @@
                     || cell.isInBananaRange"
              class="square overlap"
              [matMenuTriggerFor]="actionsMenu"
-             [style.z-index]="5">
+             [style.z-index]="6">
 
           <div *ngIf="cell.isAllyWormCell && cell.occupier !== player1.currentWorm;
                       else cell.isInDigMoveRange ? basicIndicator
@@ -120,13 +120,13 @@
 
         <ng-container *ngIf="cell.occupier && cell.occupier === player1.currentWorm
                                            && cell.occupier.player.id === player1.id">
-          <div [style.z-index]="6" class="selector-corners-shadow overlap"></div>
-          <div [style.z-index]="7" class="selector-corners-real overlap"></div>
+          <div [style.z-index]="7" class="selector-corners-shadow overlap"></div>
+          <div [style.z-index]="8" class="selector-corners-real overlap"></div>
         </ng-container>
 
         <img *ngIf="cell.occupier"
              class="occupant overlap overlap-container"
-             [style.z-index]="3"
+             [style.z-index]="4"
              [title]="'Player ' + cell.occupier.player.id"
              [class.on-turn]="cell.occupier === player1.currentWorm
                                 && cell.occupier.player.id === player1.id"
@@ -134,11 +134,17 @@
 
         <div *ngIf="cell.powerup"
              class="powerup overlap"
-             [style.z-index]="2"
+             [style.z-index]="3"
              [title]="'Health'"
              [style.height]="gameMap?.mapStyle?.powerupSize"
              [style.font-size]="gameMap?.mapStyle?.powerupSize">
           🍕
+        </div>
+
+        <div *ngIf="cell.event?.type == 'used-banana-bomb'"
+             [style.transform]="'scale('+ (gameRunner?.config.agentWorms.bananas.damageRadius * 2 +1) +')'"
+          class="square explosion overlap"
+             [style.z-index]="2">
         </div>
 
         <div class="square texture overlap"
