@@ -1,3 +1,23 @@
+export enum CommandStringsEnum {
+  MOVE = 'move',
+  DIG = 'dig',
+  SHOOT = 'shoot',
+  BANANA = 'banana',
+  SELECT = 'select',
+  NOTHING = 'nothing'
+}
+
+export enum ZIndexLevelsEnum {
+  texture,
+  powerup,
+  explosion,
+  worm,
+  cornerSelector,
+  actionMenu,
+  bananaThrow,
+  shootLaser,
+}
+
 export interface Dashboard {
   players: DashboardPlayerDetails[];
   currentRound: number;
@@ -26,9 +46,15 @@ export interface MapCell extends Position {
   event: VisualizerEvent;
 }
 
-interface VisualizerEvent {
-  type: string;
-  details: any;
+export interface VisualizerEvent {
+  type: CommandStringsEnum;
+  wormCommanded: Worm;
+  result: string;
+  positionStart?: Position;
+  positionCenter?: Position;
+  positionEnd: Position;
+  laserLength?: number;
+  rotation?: number;
 }
 
 interface CellType {
@@ -47,7 +73,7 @@ interface Bananas {
   damageRadius: number;
 }
 
-interface Worm {
+export interface Worm {
   id: number;
   diggingRange: number;
   health: number;
@@ -116,6 +142,7 @@ interface MapStyle {
   gridStyle: string;
   cellSize: number;
   powerupSize: string;
+  bananaBombScale: number;
 }
 
 export interface GameMap {

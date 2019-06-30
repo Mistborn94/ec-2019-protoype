@@ -6,6 +6,8 @@ $theme-panel-backing: rgba(0, 0, 0, 0.67);
 
 $light-green: #47ff3fff;
 $dark-green: #222d29;
+$move-animations-delay: 750ms;
+$banana-throw-air-time: 750ms;
 
 .background {
   z-index: -9;
@@ -135,7 +137,6 @@ $dark-green: #222d29;
   .cheats {
     @extend .blue-font;
   }
-
 }
 
 .disable-clicks {
@@ -251,12 +252,6 @@ $dark-green: #222d29;
   }
 }
 
-.occupant {
-  pointer-events: none;
-  place-self: center;
-  width: 75%;
-}
-
 .powerup {
   pointer-events: none;
   justify-self: center;
@@ -264,6 +259,7 @@ $dark-green: #222d29;
 
 .on-turn {
   animation: animateJump 2000ms infinite;
+  animation-delay: $move-animations-delay;
 }
 
 ._selector-corners-default {
@@ -319,6 +315,17 @@ $dark-green: #222d29;
   }
 }
 
+.worm-icon-container {
+  pointer-events: none;
+  display: grid;
+
+  .worm-icon {
+    height: 75%;
+    place-self: center;
+  }
+  transition: transform $move-animations-delay cubic-bezier(0.79, 1.01, 0.26, 0.02);
+}
+
 .texture {
   pointer-events: none;
   border: 0.5px solid dimgray;
@@ -361,9 +368,23 @@ $versions-count: 3;
     }
   }
 }
+
 @include _texture-styles-classes;
 
 .explosion {
+  pointer-events: none;
   background-image: url('../../assets/big-explosion.gif');
   background-size: cover;
+}
+
+.laser {
+  background: linear-gradient(transparent 40%, red, transparent 60%);
+  height: 100%;
+  animation: transparentToVisible 300ms alternate 2 cubic-bezier(0, 1, 0.7, 1);
+  opacity: 0;
+}
+
+.banana {
+  height: 100%;
+  transition: transform $banana-throw-air-time cubic-bezier(0, 0.25, 1, 0.75);
 }

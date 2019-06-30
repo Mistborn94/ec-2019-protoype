@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from 'src/app/end-game-dialog/end-game-dialog.component';
 import {
   ActionsEnum,
+  CommandStringsEnum,
   Dashboard,
   GameConfig,
   GameMap,
@@ -10,13 +11,14 @@ import {
   MapCell,
   Position,
   SurfaceTypeEnum,
-  WormsPlayer,
+  VisualizerEvent, Worm,
+  WormsPlayer, ZIndexLevelsEnum,
 } from './game-engine-visualiser.interface';
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
+import { flatMap, getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
 import { CommandPair } from './command-pair';
 
 @Component({
@@ -28,16 +30,20 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
   player1: WormsPlayer;
   private player2: WormsPlayer;
+  worms: Worm[];
   actionsEnum = ActionsEnum;
+  commandStringsEnum = CommandStringsEnum;
+  zIndexLevelsEnum = ZIndexLevelsEnum;
+  shootEvents: VisualizerEvent[];
+  bananaEvents: VisualizerEvent[];
+  lastEventIndex = 0;
   dashboard: Dashboard;
 
   isPaused: boolean;
-
-  private config: GameConfig;
   private gameRunner: GameRunner;
   gameMap: GameMap;
-  flatCells: MapCell[];
 
+  flatCells: MapCell[];
   private commandsCollector$ = new Subject<CommandPair>();
   private unsubscribe$ = new Subject<void>();
 
@@ -50,22 +56,21 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     this.unsubscribe$.next();
 
     this.http.get('assets/config.json')
-      .subscribe((item: any) => {
-        this.config = item;
-
-        this.gameRunner = new ec2019.GameRunner(getRandomInteger(999), this.config, 2);
+      .subscribe((config: GameConfig) => {
+        this.gameRunner = new ec2019.GameRunner(getRandomInteger(999), config, 2);
         this.gameMap = this.gameRunner.getGeneratedMap();
-        this.setMapStyle(this.gameMap);
+        this.gameMap = this.getMapStyle(this.gameMap, config);
         this.flatCells = this.gameMap.cells.toArray();
         this.flatCells.forEach(c => c.styleNumber = getRandomInteger(3));
 
         let playersList = this.gameMap.players.toArray();
         this.player1 = playersList[0];
         this.player2 = playersList[1];
+        this.worms = this.getLivingWorms();
 
         this.nextRound();
 
-        console.log(this.gameRunner, this.gameMap, this.config);
+        console.log(this.gameRunner, this.gameMap, config);
       });
 
     let commandsBucket = <CommandPair[]>[];
@@ -88,6 +93,10 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       });
   }
 
+  private getLivingWorms(): Worm[] {
+    return flatMap(this.gameMap.players.toArray().map(p => p.livingWorms.toArray()));
+  }
+
   private getDashBoard(): Dashboard {
     return {
       players: [this.player1, this.player2].map(p => ({
@@ -108,13 +117,15 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     };
   }
 
-  private setMapStyle(map) {
+  private getMapStyle(map: GameMap, config: GameConfig): GameMap {
     let cellSize = 900 / map.size;
     map.mapStyle = {
       gridStyle: getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
       cellSize,
       powerupSize: `${cellSize * 0.7}px`,
+      bananaBombScale: config.agentWorms.bananas.damageRadius * 2 + 1,
     };
+    return map;
   }
 
   doBotAction() {
@@ -141,7 +152,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     this.dashboard = this.getDashBoard();
 
     let currentWorm = this.player1.currentWorm;
-    let bananaRange = this.config.agentWorms.bananas.range;
+    let bananaRange = this.gameRunner.config.agentWorms.bananas.range;
     let wormOnTurnCell = this.flatCells.find(c => this.isSamePosition(c, currentWorm.position));
     this.flatCells.forEach(c =>
       c.isAllyWormCell
@@ -163,40 +174,60 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         .forEach(c => c.isInBananaRange = true);
     }
 
-    let state = this.gameRunner.renderJson(this.gameMap, this.player2);
-    // JSON.parse(state)
-    //   .visualizerEvents
-    [{
-      type: 'used-banana-bomb',
-      details: {
-        positionStart: {
-          x: 3,
-          y: 3,
-        },
-        positionEnd: {
-          x: 5,
-          y: 5,
-        },
-      },
-    },
-      {
-        type: 'used-shoot',
-        details: {
-          positionStart: {
-            x: 3,
-            y: 3,
-          },
-          positionEnd: {
-            x: 5,
-            y: 5,
-          },
-        },
-      }]
-      .forEach(e => {
-        this.flatCells.find(c => this.isSamePosition(c, e.details.positionEnd))
-          .event = e;
-      });
+    let state = JSON.parse(this.gameRunner.renderJson(this.gameMap, null));
+    let events: VisualizerEvent[] = state.visualizerEvents;
+    if (events.length > 0) {
+      let lastRoundEventsLength = this.lastEventIndex;
+      this.lastEventIndex = events.length;
+      events = events.slice(lastRoundEventsLength);
 
+
+      this.shootEvents = events.filter(e => e.type == CommandStringsEnum.SHOOT)
+        .map(e => {
+          let end = e.positionEnd;
+          let start = e.positionStart;
+          e.positionCenter = {
+            x: (end.x + start.x) / 2,
+            y: (end.y + start.y) / 2,
+          };
+          e.laserLength = this.euclideanDistance(end, start) - (e.result === 'HIT' ? 0 : 1);
+          e.rotation = 360 * Math.atan2(start.y - end.y, start.x - end.x) / (Math.PI * 2);
+
+          return e;
+        });
+
+      this.bananaEvents = events.filter(e => e.type == CommandStringsEnum.BANANA)
+        .map(e => {
+          return e;
+        });
+
+
+/*      for (let cell of this.flatCells) {
+        let matchingEventIndex = events.findIndex(e => {
+          let positionToCheck;
+          if (e.type === CommandStringsEnum.MOVE) {
+            positionToCheck = e.positionEnd;
+          } else if (e.type === CommandStringsEnum.DIG) {
+            positionToCheck = e.positionEnd;
+          } else if (e.type === CommandStringsEnum.SHOOT) {
+            positionToCheck = e.positionStart;
+          } else if (e.type === CommandStringsEnum.BANANA) {
+            positionToCheck = e.positionEnd;
+          }
+          return this.isSamePosition(cell, positionToCheck);
+        });
+
+        if (matchingEventIndex !== -1) {
+          cell.event = events[matchingEventIndex];
+          events.splice(matchingEventIndex, 1);
+        }
+        if (events.length === 0) {
+          break;
+        }
+      }*/
+
+      this.worms = this.getLivingWorms();
+    }
   }
 
   private isSamePosition(a: Position, b: Position) {
@@ -204,7 +235,11 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   private shootingDistance(a: Position, b: Position) {
-    return Math.floor(Math.hypot(b.x - a.x, b.y - a.y));
+    return Math.floor(this.euclideanDistance(b, a));
+  }
+
+  private euclideanDistance(b: Position, a: Position) {
+    return Math.hypot(b.x - a.x, b.y - a.y);
   }
 
   private getNearCells(center: Position, range: number = 1): MapCell[] {
