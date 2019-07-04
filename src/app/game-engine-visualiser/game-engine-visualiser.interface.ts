@@ -53,8 +53,11 @@ export interface VisualizerEvent {
   positionStart?: Position;
   positionCenter?: Position;
   positionEnd: Position;
+  positionRelative: Position;
   laserLength?: number;
   rotation?: number;
+  randomUrl?: number;
+  timeout?: boolean;
 }
 
 interface CellType {
@@ -141,7 +144,7 @@ export interface WormsPlayer {
 interface MapStyle {
   gridStyle: string;
   cellSize: number;
-  powerupSize: string;
+  powerupSize: number;
   bananaBombScale: number;
 }
 

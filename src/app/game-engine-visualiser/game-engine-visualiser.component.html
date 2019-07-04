@@ -22,7 +22,7 @@
         <div class="portrait-detail" *ngFor="let worm of details.worms">
           <img class="image"
                [class.is-selected-worm]="worm == player1?.currentWorm"
-               [style.height]="gameMap?.mapStyle.cellSize + 'px'"
+               [style.height.px]="gameMap?.mapStyle.cellSize"
                [src]="'../../../../assets/worm' + details.playerId + worm.id+ '.png'"/>
           <div class="worm-id">Id</div>
           <div class="worm-id-v orange-font">{{worm.id}}</div>
@@ -44,21 +44,25 @@
   <div class="overlap-container" style="    justify-self: right;">
 
     <ng-container *ngFor="let worm of worms">
-      <div class="worm-icon-container overlap"
-           [style.height]="gameMap?.mapStyle.cellSize + 'px'"
-           [style.width]="gameMap?.mapStyle.cellSize + 'px'"
+      <div class="worm-icon-container overlap overlap-container"
+           [style.height.px]="gameMap?.mapStyle.cellSize"
+           [style.width.px]="gameMap?.mapStyle.cellSize"
            [style.z-index]="zIndexLevelsEnum.worm"
            [style.transform]="'translate('+worm.position.x+'00%, '+worm.position.y+'00%)'">
-        <img class="worm-icon"
+        <img class="worm-icon overlap"
              [class.on-turn]="worm === player1.currentWorm"
              [src]="'../../../../assets/worm' + worm.player.id + worm.id + '.png'"/>
+        <ng-container *ngIf="worm === player1.currentWorm">
+          <div class="overlap" [style.z-index]="zIndexLevelsEnum.cornerSelector - 1" class="selector-corners-shadow overlap"></div>
+          <div class="overlap" [style.z-index]="zIndexLevelsEnum.cornerSelector" class="selector-corners-real overlap"></div>
+        </ng-container>
       </div>
     </ng-container>
 
     <ng-container *ngFor="let event of shootEvents">
       <div class="overlap disable-clicks"
-           [style.height]="gameMap?.mapStyle.cellSize + 'px'"
-           [style.width]="gameMap?.mapStyle.cellSize + 'px'"
+           [style.height.px]="gameMap?.mapStyle.cellSize"
+           [style.width.px]="gameMap?.mapStyle.cellSize"
            [style.z-index]="zIndexLevelsEnum.shootLaser"
            [ngStyle]="{'transform': 'translate('+event.positionCenter.x*100+'%,'+event.positionCenter.y*100+'%) ' +
             'rotate('+ event.rotation +'deg)'}">
@@ -67,27 +71,30 @@
     </ng-container>
 
     <ng-container *ngFor="let event of bananaEvents">
-      <div class="overlap disable-clicks"
-           [style.height]="gameMap?.mapStyle.cellSize + 'px'"
-           [style.width]="gameMap?.mapStyle.cellSize + 'px'"
+      <div class="overlap disable-clicks overlap-container"
+           [style.height.px]="gameMap?.mapStyle.cellSize"
+           [style.width.px]="gameMap?.mapStyle.cellSize"
            [style.z-index]="zIndexLevelsEnum.bananaThrow"
            [ngStyle]="{'transform': 'translate('+event.positionStart.x*100+'%,'+event.positionStart.y*100+'%)'}">
-        <div class="banana"
-             [style.font-size]="gameMap?.mapStyle.powerupSize"
-             [ngStyle]="{'transform': 'translate('+event.positionEnd.x*100+'%,'+event.positionEnd.y*100+'%)'}">
-          🍌
+        <div class="remove-banana-animation overlap">
+          <div class="banana"
+               [style.font-size.px]="gameMap?.mapStyle.powerupSize"
+               [ngStyle]="{'transform': event.timeout
+                                    ? 'translate('+(event.positionRelative.x)*100+'%,'
+                                                  +(event.positionRelative.y)*100+'%)'
+                                    : ''}">
+            <div class="icon">🍌</div>
+          </div>
+        </div>
+        <div class="explosion overlap"
+             *ngIf="event.result !== 'DEEP_SPACE'"
+             [style.background-image]="'url(\'../../assets/big-explosion.gif'+ '?a=' + event.randomUrl +'\')'"
+             [ngStyle]="{'transform': 'translate('+(event.positionRelative.x)*100+'%,'
+                                                  +(event.positionRelative.y)*100+'%)'
+                                    + 'scale('+ gameMap?.mapStyle.bananaBombScale +')'}">
         </div>
       </div>
     </ng-container>
-
-    <!--    <ng-container *ngFor="let event of events">-->
-    <!--      <div class="overlap"-->
-    <!--           [style.height]="gameMap?.mapStyle.cellSize + 'px'"-->
-    <!--           [style.width]="gameMap?.mapStyle.cellSize + 'px'"-->
-    <!--           [style.z-index]="zIndexLevelsEnum.bananaThrow"-->
-    <!--           [style.transform]="'translate('+event.position.x+'00%, '+event.position.y+'00%)'">-->
-    <!--      </div>-->
-    <!--    </ng-container>-->
 
     <div class="map-container overlap"
          [style.grid-template-rows]="gameMap?.mapStyle.gridStyle"
@@ -108,21 +115,21 @@
                [matMenuTriggerFor]="actionsMenu"
                [style.z-index]="zIndexLevelsEnum.actionMenu">
             <mat-menu #actionsMenu="matMenu">
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
+              <button *ngIf="cell.isInDigMoveRange && cell.type.name$ == 'AIR'"
                       mat-menu-item
                       title="Move here"
                       (click)="doPlayerAction(cell, actionsEnum.MOVE)">
                 <div class="action-icon">🏃‍♀️</div>
               </button>
 
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'DIRT'"
+              <button *ngIf="cell.isInDigMoveRange && cell.type.name$ == 'DIRT'"
                       mat-menu-item
                       title="Dig here"
                       (click)="doPlayerAction(cell, actionsEnum.DIG)">
                 <div class="action-icon">⛏</div>
               </button>
 
-              <button *ngIf="cell.isInDigMoveRange && cell.type.name == 'AIR'"
+              <button *ngIf="cell.isInDigMoveRange && cell.type.name$ == 'AIR'"
                       mat-menu-item
                       title="Shoot in this direction"
                       (click)="doPlayerAction(cell, actionsEnum.SHOOT)">
@@ -165,25 +172,13 @@
             </ng-template>
           </div>
 
-          <ng-container *ngIf="cell.occupier && cell.occupier === player1.currentWorm
-                                           && cell.occupier.player.id === player1.id">
-            <div [style.z-index]="zIndexLevelsEnum.cornerSelector - 1" class="selector-corners-shadow overlap"></div>
-            <div [style.z-index]="zIndexLevelsEnum.cornerSelector" class="selector-corners-real overlap"></div>
-          </ng-container>
-
           <div *ngIf="cell.powerup"
                class="powerup overlap"
                [style.z-index]="zIndexLevelsEnum.powerup"
                [title]="'Health'"
-               [style.height]="gameMap?.mapStyle.powerupSize"
-               [style.font-size]="gameMap?.mapStyle.powerupSize">
+               [style.height.px]="gameMap?.mapStyle.powerupSize"
+               [style.font-size.px]="gameMap?.mapStyle.powerupSize">
             🍎
-          </div>
-
-          <div *ngIf="cell.event?.type == commandStringsEnum.BANANA"
-               [style.transform]="'scale('+ gameMap?.mapStyle.bananaBombScale +')'"
-               class="square explosion overlap"
-               [style.z-index]="zIndexLevelsEnum.explosion">
           </div>
 
           <div class="square texture overlap"

@@ -1,3 +1,5 @@
+@import '../game-engine-visualiser/game-engine-visualiser.component';
+
 .font-size-extra-large {
   font-size: 4em;
 }
@@ -14,5 +16,19 @@
 ::ng-deep {
   mat-dialog-content {
     overflow: hidden !important;
+  }
+
+  .mat-dialog-container {
+    @extend .blue-font;
+    @extend ._blue-panel;
+  }
+}
+
+.close-button {
+  @extend ._blue-panel;
+  padding: 0 12px;
+  transition: 300ms ease-in-out;
+  &:hover {
+    background-color: #fff3;
   }
 }

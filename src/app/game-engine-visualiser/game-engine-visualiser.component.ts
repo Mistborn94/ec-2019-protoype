@@ -122,7 +122,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     map.mapStyle = {
       gridStyle: getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
       cellSize,
-      powerupSize: `${cellSize * 0.7}px`,
+      powerupSize: cellSize * 0.7,
       bananaBombScale: config.agentWorms.bananas.damageRadius * 2 + 1,
     };
     return map;
@@ -198,33 +198,16 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
       this.bananaEvents = events.filter(e => e.type == CommandStringsEnum.BANANA)
         .map(e => {
+          let end = e.positionEnd;
+          let start = e.positionStart;
+          e.positionRelative = {
+            x: (end.x - start.x),
+            y: (end.y - start.y),
+          };
+          e.randomUrl = Math.random();
+          setTimeout(() => e.timeout = true, 0);
           return e;
         });
-
-
-/*      for (let cell of this.flatCells) {
-        let matchingEventIndex = events.findIndex(e => {
-          let positionToCheck;
-          if (e.type === CommandStringsEnum.MOVE) {
-            positionToCheck = e.positionEnd;
-          } else if (e.type === CommandStringsEnum.DIG) {
-            positionToCheck = e.positionEnd;
-          } else if (e.type === CommandStringsEnum.SHOOT) {
-            positionToCheck = e.positionStart;
-          } else if (e.type === CommandStringsEnum.BANANA) {
-            positionToCheck = e.positionEnd;
-          }
-          return this.isSamePosition(cell, positionToCheck);
-        });
-
-        if (matchingEventIndex !== -1) {
-          cell.event = events[matchingEventIndex];
-          events.splice(matchingEventIndex, 1);
-        }
-        if (events.length === 0) {
-          break;
-        }
-      }*/
 
       this.worms = this.getLivingWorms();
     }
@@ -290,8 +273,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         data: {
           players: [],
           message: this.gameMap.winningPlayer == this.player1
-            ? 'You won!!! 🥳'
-            : 'How about another try?🥺',
+            ? 'You won! 🏆'
+            : 'Game Over\nHow about another try? 🥺',
           gameMape: this.gameMap,
         },
       })
