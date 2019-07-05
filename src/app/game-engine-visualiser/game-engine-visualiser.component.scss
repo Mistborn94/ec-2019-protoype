@@ -349,6 +349,37 @@ $banana-throw-air-time: 750ms;
   background-image: url('../../assets/texture_asteroid.png');
   background-size: cover;
   background-color: #919191;
+
+  //transform: rotateX(45deg) rotateZ(45deg) !important;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(70px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    background-image: url('../../assets/texture_asteroid.png');
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+
+    top: 50%;
+    transform: rotateX(90deg) translateY(-50%);
+    filter: brightness(0.6);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    background-image: url('../../assets/texture_asteroid.png');
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+
+    left: 50%;
+    transform: rotateY(90deg) translateX(50%);
+    filter: brightness(0.3);
+  }
 }
 
 .AIR {
@@ -362,15 +393,15 @@ $versions-count: 3;
   @for $i from 0 through $versions-count {
     .DEEP_SPACE#{$i} {
       @extend .DEEP_SPACE;
-      transform: rotate(#{$i*90}deg);
+      //transform: rotate(#{$i*90}deg);
     }
     .DIRT#{$i} {
       @extend .DIRT;
-      transform: rotate(#{$i*90}deg);
+      //transform: rotate(#{$i*90}deg);
     }
     .AIR#{$i} {
       @extend .AIR;
-      transform: rotate(#{$i*90}deg);
+      //transform: rotate(#{$i*90}deg);
     }
   }
 }
