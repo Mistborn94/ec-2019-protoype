@@ -1,7 +1,7 @@
-"use strict";
+// "use strict";
 
-let fs = require('fs');
-let readline = require('readline');
+// let fs = require('fs');
+// let readline = require('readline');
 const stateFileName = "state.json";
 
 let myPlayer;
@@ -53,24 +53,21 @@ let surfaceTypes = {
     DIRT: 'DIRT'
 };
 
-let consoleReader = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+// let consoleReader = readline.createInterface({
+//     input: process.stdin,
+//     output: process.stdout
+// });
 
-consoleReader.on("line", (roundNumber) => {
-    executeRound(roundNumber); // Read in the current round number
-});
+// consoleReader.on("line", (roundNumber) => {
+//     executeRound(roundNumber); // Read in the current round number
+// });
 
-function executeRound(roundNumber) {
+export function executeRound(stateFile) {
     // Read the current state and choose an action
-    let stateFile = fs.readFileSync(`./rounds/${roundNumber}/${stateFileName}`);
-    stateFile = JSON.parse(stateFile);
-
+    // let stateFile = fs.readFileSync(`./rounds/${roundNumber}/${stateFileName}`);
     initializeEntities(stateFile);
 
-    let command = runStrategy() || doNothingCommand();
-    console.log(`C;${roundNumber};${command}`);
+    return runStrategy() || doNothingCommand();
 }
 
 /**

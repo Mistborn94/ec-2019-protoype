@@ -30,7 +30,7 @@
     "professionName": "Agent"
   },
   "pushbackDamage": 20,
-  "mapSize": 13,
+  "mapSize": 11,
   "healthPackHp": 10,
   "totalHealthPacks": 2,
   "scores": {

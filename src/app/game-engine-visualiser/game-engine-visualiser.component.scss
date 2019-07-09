@@ -79,7 +79,7 @@ $banana-throw-air-time: 750ms;
 
 .dashboard-container {
   display: grid;
-  grid-template-rows: max-content max-content auto;
+  grid-template-rows: max-content max-content max-content auto;
   grid-gap: 32px;
 
   @extend ._blue-panel;
@@ -117,13 +117,13 @@ $banana-throw-air-time: 750ms;
 
         // @formatter:off
         grid-template-areas:
-      'image worm-id    worm-id-v'
       'image health     health-v'
       'image profession profession-v';
         // @formatter:on
-        @include generate-grid-areas(image, worm-id, worm-id-v, health, health-v, profession, profession-v);
+        @include generate-grid-areas(image, health, health-v, profession, profession-v);
 
         .image {
+          height: 60px;
           grid-area: image;
           filter: drop-shadow(0 0 8px #fff7);
 
@@ -140,6 +140,24 @@ $banana-throw-air-time: 750ms;
 
   .cheats {
     @extend .blue-font;
+
+    .tutorial-container {
+      display: grid;
+      grid-template-columns: auto max-content;
+      align-items: center;
+
+      .small-icon {
+        animation: unset;
+        position: unset;
+        height: 30px;
+        width: 30px;
+        margin: 10px 0;
+      }
+    }
+
+    .flashing-tutorial {
+      animation: opacity-0-to-1 1500ms alternate 8;
+    }
   }
 }
 
@@ -328,7 +346,7 @@ $banana-throw-air-time: 750ms;
     place-self: center;
   }
 
-  transition: transform $move-animations-delay cubic-bezier(0.79, 1.01, 0.26, 0.02);
+  transition: transform $move-animations-delay cubic-bezier(0.62, 0.85, 0.49, 0.24);
 }
 
 .texture {
@@ -411,4 +429,13 @@ $versions-count: 3;
 
 .remove-banana-animation {
   animation: opacity-0-to-1 both reverse 200ms $banana-throw-air-time;
+}
+
+.challenge-logo {
+  height: 200px;
+  margin: -50px 0;
+}
+
+.map-view {
+  justify-self: right;
 }

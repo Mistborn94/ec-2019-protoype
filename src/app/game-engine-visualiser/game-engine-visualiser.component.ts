@@ -11,15 +11,18 @@ import {
   MapCell,
   Position,
   SurfaceTypeEnum,
-  VisualizerEvent, Worm,
-  WormsPlayer, ZIndexLevelsEnum,
+  VisualizerEvent,
+  Worm,
+  WormsPlayer,
+  ZIndexLevelsEnum,
 } from './game-engine-visualiser.interface';
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { flatMap, getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
+import { clone, flatMap, getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
 import { CommandPair } from './command-pair';
+import * as bot from '../../../bot';
 
 @Component({
   selector: 'app-game-engine-visualiser',
@@ -46,6 +49,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   flatCells: MapCell[];
   private commandsCollector$ = new Subject<CommandPair>();
   private unsubscribe$ = new Subject<void>();
+  private currentRoundTracker: number;
 
   constructor(private dialog: MatDialog,
               private http: HttpClient) {
@@ -63,6 +67,9 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         this.flatCells = this.gameMap.cells.toArray();
         this.flatCells.forEach(c => c.styleNumber = getRandomInteger(3));
 
+        this.fixJsEngineIsssues();
+        this.currentRoundTracker = 0;
+
         let playersList = this.gameMap.players.toArray();
         this.player1 = playersList[0];
         this.player2 = playersList[1];
@@ -70,7 +77,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
         this.nextRound();
 
-        console.log(this.gameRunner, this.gameMap, config);
+        // console.log(this.gameRunner, this.gameMap, config);
       });
 
     let commandsBucket = <CommandPair[]>[];
@@ -86,10 +93,42 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
         if (commandsBucket.filter(c => !c.command.includes('select')).length === 2) {
           this.gameRunner.processRound(this.gameMap, commandsList);
+          commandsBucket.filter(command => command.type == ActionsEnum.SELECT)
+            .forEach(command => this.gameMap
+              .players.toArray()
+              .find(p => p == command.player)
+              .wormSelectionTokens--);
 
           commandsBucket = [];
           setTimeout(_ => this.nextRound(), 0);
         }
+      });
+  }
+
+  private fixJsEngineIsssues() {
+    let wormToEdit = this.gameMap.players.toArray()[0].worms.toArray()[1];
+    wormToEdit.position.x++;
+    this.flatCells.find(c => c.occupier == wormToEdit).occupier = null;
+    this.flatCells.find(c => this.isSamePosition(c, wormToEdit.position)).occupier = wormToEdit;
+
+    [0, 1, 2].forEach(y => {
+      let lCell = this.flatCells.find(c => this.isSamePosition(c, {x: 3, y: y}));
+      let rCell = this.flatCells.find(c => this.isSamePosition(c, {x: 6, y: y}));
+      let lCellClone = clone(lCell);
+      lCell.type = clone(rCell.type);
+      rCell.type = lCellClone.type;
+    });
+
+    let halfSize = Math.round((this.gameMap.size - 1) / 2);
+    let centerCell = this.flatCells.find(c => this.isSamePosition(c, {x: halfSize, y: halfSize}));
+    let airType = this.flatCells.find(c => c.type.name$ == 'AIR').type;
+    this.flatCells.filter(c => c.powerup)
+      .forEach(powerCell => {
+        let newPowerUpCell = getRandomFromArray(this.getNearCells(centerCell).filter(c => !c.powerup && c));
+        newPowerUpCell.powerup = powerCell.powerup;
+        newPowerUpCell.type = airType;
+
+        powerCell.powerup = null;
       });
   }
 
@@ -113,7 +152,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         roundErrors: this.gameRunner.getErrorList(this.gameMap, p),
         worms: p.worms.toArray(),
       })),
-      currentRound: this.gameMap.currentRound,
+      currentRound: this.currentRoundTracker,
     };
   }
 
@@ -130,13 +169,20 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
   doBotAction() {
     let stateJson = this.gameRunner.renderJson(this.gameMap, this.player2);
-    // TODO: send to bot file
+    let state = JSON.parse(stateJson);
+    // JS engine doesn't render json state correctly
+    state.map.forEach(x => {
+      x.forEach(y => {
+        y.type = y.type.name$;
+        if (y.occupier) {
+          let playerIdPropertyName = Object.keys(y.occupier).find(key => key.includes('playerId'));
+          y.occupier.playerId = y.occupier[playerIdPropertyName];
+        }
+      });
+    });
+    let botCommand = bot.executeRound(state);
 
-    let nearCells = this.getNearCells(<Position>this.player2.currentWorm.position)
-      .filter(c => c.type.name$ === SurfaceTypeEnum.AIR && !this.isSamePosition(c, this.player2.currentWorm.position));
-    let commandCell = getRandomFromArray(nearCells);
-
-    this.commandsCollector$.next(new CommandPair(this.player2, `move ${commandCell.x} ${commandCell.y}`, ActionsEnum.MOVE));
+    this.commandsCollector$.next(new CommandPair(this.player2, botCommand, ActionsEnum.MOVE));
   }
 
   private nextRound(): void {
@@ -144,6 +190,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       this.showEndGameDialog();
     }
 
+    this.currentRoundTracker++;
     this.doBotAction();
     this.refreshMap();
   }
@@ -274,7 +321,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
           players: [],
           message: this.gameMap.winningPlayer == this.player1
             ? 'You won! 🏆'
-            : 'Game Over\nHow about another try? 🥺',
+            : 'Game Over 🥺',
           gameMape: this.gameMap,
         },
       })

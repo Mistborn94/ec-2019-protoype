@@ -22,6 +22,7 @@
   var throwISE = Kotlin.throwISE;
   var ensureNotNull = Kotlin.ensureNotNull;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var equals = Kotlin.equals;
   var NotImplementedError = Kotlin.kotlin.NotImplementedError;
@@ -58,7 +59,6 @@
   var throwCCE = Kotlin.throwCCE;
   var lastOrNull = Kotlin.kotlin.collections.lastOrNull_2p1efm$;
   var joinToString = Kotlin.kotlin.collections.joinToString_fmv235$;
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var chunked = Kotlin.kotlin.collections.chunked_ba2ldo$;
   var joinToString_0 = Kotlin.kotlin.collections.joinToString_cgipc5$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
@@ -217,7 +217,7 @@
   }
   CommandStrings.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'CommandStringsEnum',
+    simpleName: 'CommandStrings',
     interfaces: [Enum]
   };
   function CommandStrings$values() {
@@ -242,13 +242,13 @@
     }
   }
   CommandStrings.valueOf_61zpoe$ = CommandStrings$valueOf;
-  function BananaCommandFeedback(command, worm, score, result, target) {
+  function BananaCommandFeedback(command, worm, score, result, target, affectedCells) {
     CommandFeedback.call(this, command, score, worm.player.id, result !== BananaResult$DEEP_SPACE_getInstance());
     this.result = result;
     this.target = target;
     this.start_0 = worm.position;
     this.message_rrp026$_0 = 'Banana hit ' + this.result + ' at ' + this.target + ' from ' + this.start_0;
-    this.visualizerEvent_e3jjct$_0 = new VisualizerEvent(CommandStrings$BANANA_getInstance().string, this.result.name, worm, this.start_0, this.target);
+    this.visualizerEvent_e3jjct$_0 = new VisualizerEvent(CommandStrings$BANANA_getInstance().string, this.result.name, worm, this.start_0, this.target, affectedCells);
   }
   Object.defineProperty(BananaCommandFeedback.prototype, 'message', {
     get: function () {
@@ -420,7 +420,7 @@
   function DigCommandFeedback(command, worm, score, end) {
     CommandFeedback.call(this, command, score, worm.player.id, true);
     this.message_56spnb$_0 = 'Worm dug out ' + end;
-    this.visualizerEvent_vagkpq$_0 = new VisualizerEvent(CommandStrings$DIG_getInstance().string, null, worm, null, end);
+    this.visualizerEvent_vagkpq$_0 = new VisualizerEvent(CommandStrings$DIG_getInstance().string, null, worm, null, end, null);
   }
   Object.defineProperty(DigCommandFeedback.prototype, 'message', {
     get: function () {
@@ -440,7 +440,7 @@
   function DoNothingCommandFeedback(command, worm, score) {
     CommandFeedback.call(this, command, score, worm.player.id, true);
     this.message_m454vd$_0 = worm.toString() + ' successfully did nothing';
-    this.visualizerEvent_e4wv4u$_0 = new VisualizerEvent(CommandStrings$NOTHING_getInstance().string, null, worm, null, null);
+    this.visualizerEvent_e4wv4u$_0 = new VisualizerEvent(CommandStrings$NOTHING_getInstance().string, null, worm, null, null, null);
   }
   Object.defineProperty(DoNothingCommandFeedback.prototype, 'message', {
     get: function () {
@@ -460,7 +460,7 @@
   function SelectCommandFeedback(command, worm, score) {
     CommandFeedback.call(this, command, score, worm.player.id, true);
     this.message_36zvnt$_0 = 'Selected ' + worm;
-    this.visualizerEvent_r1hqhg$_0 = new VisualizerEvent(CommandStrings$SELECT_getInstance().string, null, worm, null, null);
+    this.visualizerEvent_r1hqhg$_0 = new VisualizerEvent(CommandStrings$SELECT_getInstance().string, null, worm, null, null, null);
   }
   Object.defineProperty(SelectCommandFeedback.prototype, 'message', {
     get: function () {
@@ -483,7 +483,7 @@
     this.target = target;
     this.start_0 = worm.position;
     this.message_378pe4$_0 = worm.toString() + "'s shot " + this.result + ' at ' + this.target + ' from ' + this.start_0;
-    this.visualizerEvent_4v6og1$_0 = new VisualizerEvent(CommandStrings$SHOOT_getInstance().string, this.result.name, worm, this.start_0, this.target);
+    this.visualizerEvent_4v6og1$_0 = new VisualizerEvent(CommandStrings$SHOOT_getInstance().string, this.result.name, worm, this.start_0, this.target, null);
   }
   Object.defineProperty(ShootCommandFeedback.prototype, 'message', {
     get: function () {
@@ -551,7 +551,7 @@
   function TeleportCommandFeedback(command, worm, score, result, start, end) {
     CommandFeedback.call(this, command, score, worm.player.id, result === TeleportResult$MOVED_getInstance());
     this.message_psoaig$_0 = 'Worm ' + result + ' from ' + start + ' to ' + end;
-    this.visualizerEvent_bmt477$_0 = new VisualizerEvent(CommandStrings$MOVE_getInstance().string, result.name, worm, start, end);
+    this.visualizerEvent_bmt477$_0 = new VisualizerEvent(CommandStrings$MOVE_getInstance().string, result.name, worm, start, end, null);
   }
   Object.defineProperty(TeleportCommandFeedback.prototype, 'message', {
     get: function () {
@@ -674,7 +674,7 @@
     var wormBananas = ensureNotNull(worm.bananas);
     wormBananas.count = wormBananas.count - 1 | 0;
     if (gameMap.get_kszl2s$(this.target).type === CellType$DEEP_SPACE_getInstance()) {
-      return new BananaCommandFeedback(this.toString(), worm, this.config.scores.missedAttack, BananaResult$DEEP_SPACE_getInstance(), this.target);
+      return new BananaCommandFeedback(this.toString(), worm, this.config.scores.missedAttack, BananaResult$DEEP_SPACE_getInstance(), this.target, emptyList());
     }
     var damageRadius = wormBananas.damageRadius;
     var damage = wormBananas.damage;
@@ -683,6 +683,7 @@
     var enemyWormHit = gameMap.get_kszl2s$(this.target).isOccupied() ? BananaResult$BULLSEYE_getInstance() : BananaResult$TERRAIN_getInstance();
     var iOffset = this.target.x - damageRadius | 0;
     var jOffset = this.target.y - damageRadius | 0;
+    var affectedCells = ArrayList_init_0();
     var $receiver = this.getAllPointsOfSquare_0(0, damageRadius * 2 | 0);
     var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
     var tmp$;
@@ -705,9 +706,11 @@
         if (distance > damageRadius) {
           break action$break;
         }
-        if (cell.type === CellType$DIRT_getInstance()) {
+        if (cell.type === CellType$DIRT_getInstance() || cell.destroyedInRound === gameMap.currentRound) {
           cell.type = CellType$AIR_getInstance();
+          cell.destroyedInRound = gameMap.currentRound;
           totalDirtDestroyed.v = totalDirtDestroyed.v + 1 | 0;
+          affectedCells.add_11rb$(cell);
         }
         cell.powerup = null;
         if (cell.isOccupied()) {
@@ -725,7 +728,7 @@
        while (false);
     }
     var totalScore = Kotlin.imul(totalDirtDestroyed.v, this.config.scores.dig) + Kotlin.imul(totalDamageDone.v, this.config.scores.attack) | 0;
-    return new BananaCommandFeedback(this.toString(), worm, totalScore, enemyWormHit, this.target);
+    return new BananaCommandFeedback(this.toString(), worm, totalScore, enemyWormHit, this.target, affectedCells);
   };
   BananaCommand.prototype.toString = function () {
     return CommandStrings$BANANA_getInstance().string + ' ' + this.target;
@@ -1484,6 +1487,7 @@
     this.x = x;
     this.y = y;
     this.type = type;
+    this.destroyedInRound = null;
     this.occupier = null;
     this.powerup = null;
     this.ipInfo = new ImageProcessingInfo();
@@ -3202,6 +3206,33 @@
     simpleName: 'PrintablePlayer',
     interfaces: []
   };
+  function PrintableVisualizerEvent(visualizerEvent) {
+    this.type = visualizerEvent.type;
+    this.result = visualizerEvent.result;
+    this.positionStart = visualizerEvent.positionStart;
+    this.positionEnd = visualizerEvent.positionEnd;
+    this.wormCommanded = PrintableWorm$Companion_getInstance().buildForVisualizerEvent_d5o6kq$(visualizerEvent.wormCommanded);
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = visualizerEvent.affectedCells) != null) {
+      var destination = ArrayList_init(collectionSizeOrDefault(tmp$, 10));
+      var tmp$_1;
+      tmp$_1 = tmp$.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
+        destination.add_11rb$(new PrintableMapCell(item));
+      }
+      tmp$_0 = destination;
+    }
+     else
+      tmp$_0 = null;
+    this.affectedCells = tmp$_0;
+  }
+  PrintableVisualizerEvent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PrintableVisualizerEvent',
+    interfaces: []
+  };
   function PrintableWorm(worm) {
     PrintableWorm$Companion_getInstance();
     this.id = worm.id;
@@ -3268,12 +3299,13 @@
     simpleName: 'PrintableWorm',
     interfaces: []
   };
-  function VisualizerEvent(type, result, _wormCommanded, positionStart, positionEnd) {
+  function VisualizerEvent(type, result, wormCommanded, positionStart, positionEnd, affectedCells) {
     this.type = type;
     this.result = result;
+    this.wormCommanded = wormCommanded;
     this.positionStart = positionStart;
     this.positionEnd = positionEnd;
-    this.wormCommanded = PrintableWorm$Companion_getInstance().buildForVisualizerEvent_d5o6kq$(_wormCommanded);
+    this.affectedCells = affectedCells;
   }
   VisualizerEvent.$metadata$ = {
     kind: Kind_CLASS,
@@ -3311,7 +3343,15 @@
     }
     this.opponents = destination_0;
     this.map = chunked(this.modifyCellsForPlayer_0(wormsMap.cells, player), wormsMap.size);
-    this.visualizerEvents = wormsMap.getVisualizerEvents();
+    var $receiver_0 = wormsMap.getVisualizerEvents();
+    var destination_1 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+    var tmp$_3;
+    tmp$_3 = $receiver_0.iterator();
+    while (tmp$_3.hasNext()) {
+      var item_0 = tmp$_3.next();
+      destination_1.add_11rb$(new PrintableVisualizerEvent(item_0));
+    }
+    this.visualizerEvents = destination_1;
   }
   WormsGameDetails.prototype.modifyCellsForPlayer_0 = function (arrayMap, player) {
     var destination = ArrayList_init(collectionSizeOrDefault(arrayMap, 10));
@@ -4033,6 +4073,7 @@
     get: PrintablePlayer$Companion_getInstance
   });
   package$printables.PrintablePlayer = PrintablePlayer;
+  package$printables.PrintableVisualizerEvent = PrintableVisualizerEvent;
   Object.defineProperty(PrintableWorm, 'Companion', {
     get: PrintableWorm$Companion_getInstance
   });
