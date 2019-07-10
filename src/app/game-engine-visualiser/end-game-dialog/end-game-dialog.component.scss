@@ -1,0 +1,37 @@
+@import '../_font-panel-styles';
+
+.font-size-extra-large {
+  font-size: 4em;
+}
+
+.mat-card-remove-box {
+  box-shadow: unset;
+  padding: unset;
+}
+
+.align-text-center {
+  text-align: center;
+}
+
+::ng-deep {
+  mat-dialog-content {
+    overflow: hidden !important;
+  }
+
+  .mat-dialog-container {
+    @extend ._blue-panel;
+  }
+}
+
+.close-button {
+  @extend ._blue-panel;
+  padding: 0 12px;
+  transition: 300ms ease-in-out;
+  &:hover {
+    background-color: #fff3;
+  }
+}
+
+h1 {
+  text-align: center;
+}
