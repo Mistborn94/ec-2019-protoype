@@ -1,4 +1,4 @@
-@import '../game-engine-visualiser/game-engine-visualiser.component';
+@import '../_font-panel-styles';
 
 .font-size-extra-large {
   font-size: 4em;
@@ -19,7 +19,6 @@
   }
 
   .mat-dialog-container {
-    @extend .blue-font;
     @extend ._blue-panel;
   }
 }

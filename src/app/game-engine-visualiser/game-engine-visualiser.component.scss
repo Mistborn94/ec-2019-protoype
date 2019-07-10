@@ -1,12 +1,6 @@
-@import '../../styles';
+@import '_font-panel-styles';
 
-$theme-blue: #00b0f0;
-$theme-orange: #f49100;
-$theme-panel-backing: rgba(0, 0, 0, 0.67);
-
-$light-green: #47ff3fff;
-$dark-green: #222d29;
-$move-animations-delay: 750ms;
+$move-animations-delay: 500ms;
 $banana-throw-air-time: 750ms;
 
 .background {
@@ -23,20 +17,20 @@ $banana-throw-air-time: 750ms;
     background-size: cover;
     background-repeat: no-repeat;
 
-    background-image: url('../../assets/background-2.jpg');
+    background-image: url('../../assets/visualizer-assets/background-2.jpg');
     //animation: animateChangeBackground 270s infinite alternate;
   }
 }
 
 @keyframes animateChangeBackground {
   0% {
-    background-image: url('../../assets/background-1.jpg');
+    background-image: url('../../assets/visualizer-assets/background-1.jpg');
   }
   50% {
-    background-image: url('../../assets/background-2.jpg');
+    background-image: url('../../assets/visualizer-assets/background-2.jpg');
   }
   100% {
-    background-image: url('../../assets/background-3.jpg');
+    background-image: url('../../assets/visualizer-assets/background-3.jpg');
   }
 }
 
@@ -50,31 +44,12 @@ $banana-throw-air-time: 750ms;
   overflow: hidden;
 }
 
-.orange-font {
-  color: $theme-orange;
-  font-family: sans-serif;
-  font-size: 18px;
-}
-
-.blue-font {
-  color: $theme-blue;
-  font-family: sans-serif;
-  font-size: 18px;
-}
-
 @mixin generate-grid-areas($elements...) {
   @each $c in $elements {
     .#{$c} {
       grid-area: $c;
     }
   }
-}
-
-._blue-panel {
-  background-color: $theme-panel-backing;
-  border: $theme-blue 3px solid;
-  border-radius: 32px;
-  padding: 32px;
 }
 
 .dashboard-container {
@@ -86,6 +61,7 @@ $banana-throw-air-time: 750ms;
 
   .dashboard-details {
     @extend .blue-font;
+    @extend .subtitle;
 
     display: grid;
     grid-gap: 4px 8px;
@@ -101,8 +77,9 @@ $banana-throw-air-time: 750ms;
     @include generate-grid-areas(player, portraits, worms, worms-v, score, score-v, selects, selects-v, bananas, bananas-v, errors);
 
     .player {
-      font-size: 32px;
+      font-size: 22px;
       font-weight: bold;
+      @extend .title;
     }
 
     .portraits {
@@ -141,22 +118,26 @@ $banana-throw-air-time: 750ms;
 
   .cheats {
     @extend .blue-font;
+    @extend .subtitle;
 
     .tutorial-container {
       display: grid;
-      grid-template-columns: auto max-content;
+      grid-template-columns: auto 20px;
       align-items: center;
 
       .small-icon {
         animation: unset;
         position: unset;
-        height: 30px;
-        width: 30px;
-        margin: 10px 0;
+        height: 25px;
+        width: 25px;
+        margin: 5px 0;
       }
     }
 
     .flashing-tutorial {
+      margin-top: 10px;
+      @extend .title;
+      font-size: 22px;
       animation: opacity-0-to-1 1500ms alternate 8;
     }
   }
@@ -259,7 +240,7 @@ $banana-throw-air-time: 750ms;
 
 .hover-action-clickable {
   cursor: pointer;
-  transition: filter 500ms;
+  transition: filter 300ms;
 
   &:hover {
     filter: brightness(1.35);
@@ -359,19 +340,19 @@ $banana-throw-air-time: 750ms;
 
 //SurfaceTypeEnum
 .DEEP_SPACE {
-  background-image: url('../../assets/texture_space.png');
+  background-image: url('../../assets/visualizer-assets/texture_space.png');
   background-size: cover;
   background-color: #050405;
 }
 
 .DIRT {
-  background-image: url('../../assets/texture_asteroid.png');
+  background-image: url('../../assets/visualizer-assets/texture_asteroid.png');
   background-size: cover;
   background-color: #919191;
 }
 
 .AIR {
-  background-image: url('../../assets/texture_rock.png');
+  background-image: url('../../assets/visualizer-assets/texture_rock.png');
   background-size: cover;
   background-color: #2f2f2f;
 }
@@ -434,7 +415,7 @@ $versions-count: 3;
 
 .challenge-logo {
   height: 200px;
-  margin: -50px 0;
+  margin: -50px 0 -50px auto;
 }
 
 .map-view {

@@ -1,0 +1,30 @@
+$theme-blue: #00b0f0;
+$theme-orange: #f49100;
+$theme-panel-backing: rgba(0, 0, 0, 0.67);
+
+$light-green: #47ff3fff;
+$dark-green: #222d29;
+
+.orange-font {
+  color: $theme-orange;
+}
+
+.blue-font {
+  color: $theme-blue;
+}
+
+._blue-panel {
+  background-color: $theme-panel-backing;
+  border: $theme-blue 3px solid;
+  border-radius: 32px;
+  padding: 32px;
+}
+
+.title {
+  font-family: Heroes-Legend;
+}
+
+.subtitle {
+  font-family: Arial-Rounded;
+  font-size: 22px;
+}

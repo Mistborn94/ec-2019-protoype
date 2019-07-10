@@ -8,8 +8,7 @@ class DialogData {
 @Component({
   selector: 'app-end-game-dialog',
   templateUrl: './end-game-dialog.component.html',
-  styleUrls: ['./end-game-dialog.component.scss',
-    '../game-engine-visualiser/game-engine-visualiser.component.scss'],
+  styleUrls: ['./end-game-dialog.component.scss'],
 })
 export class EndGameDialogComponent {
 

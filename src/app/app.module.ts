@@ -6,7 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material';
 import { GameEngineVisualiserComponent } from './game-engine-visualiser/game-engine-visualiser.component';
-import { EndGameDialogComponent } from './end-game-dialog/end-game-dialog.component';
+import { EndGameDialogComponent } from './game-engine-visualiser/end-game-dialog/end-game-dialog.component';
 import { MatComponentsModule } from './common/mat-components.module';
 import { AppRoutingModule } from './app-routing/app-routing.module';
 

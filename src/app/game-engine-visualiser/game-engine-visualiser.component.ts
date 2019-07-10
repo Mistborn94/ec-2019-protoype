@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { EndGameDialogComponent } from 'src/app/end-game-dialog/end-game-dialog.component';
+import { EndGameDialogComponent } from 'src/app/game-engine-visualiser/end-game-dialog/end-game-dialog.component';
 import {
   ActionsEnum,
   CommandStringsEnum,
@@ -16,13 +16,12 @@ import {
   WormsPlayer,
   ZIndexLevelsEnum,
 } from './game-engine-visualiser.interface';
-import ec2019 from 'ec-2019-game-engine';
+import ec2019 from './ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { clone, flatMap, getArrayRange, getRandomFromArray, getRandomInteger } from '../common/utils';
 import { CommandPair } from './command-pair';
-import * as bot from '../../../bot';
+import * as bot from './bot';
 
 @Component({
   selector: 'app-game-engine-visualiser',
@@ -56,16 +55,20 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     this.initializeNewGame();
   }
 
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+  }
+
   private initializeNewGame() {
     this.unsubscribe$.next();
 
-    this.http.get('assets/config.json')
+    this.http.get('assets/visualizer-assets/config.json')
       .subscribe((config: GameConfig) => {
-        this.gameRunner = new ec2019.GameRunner(getRandomInteger(999), config, 2);
+        this.gameRunner = new ec2019.GameRunner(this.getRandomInteger(999), config, 2);
         this.gameMap = this.gameRunner.getGeneratedMap();
         this.gameMap = this.getMapStyle(this.gameMap, config);
         this.flatCells = this.gameMap.cells.toArray();
-        this.flatCells.forEach(c => c.styleNumber = getRandomInteger(3));
+        this.flatCells.forEach(c => c.styleNumber = this.getRandomInteger(3));
 
         this.fixJsEngineIsssues();
         this.currentRoundTracker = 0;
@@ -114,8 +117,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     [0, 1, 2].forEach(y => {
       let lCell = this.flatCells.find(c => this.isSamePosition(c, {x: 3, y: y}));
       let rCell = this.flatCells.find(c => this.isSamePosition(c, {x: 6, y: y}));
-      let lCellClone = clone(lCell);
-      lCell.type = clone(rCell.type);
+      let lCellClone = this.clone(lCell);
+      lCell.type = this.clone(rCell.type);
       rCell.type = lCellClone.type;
     });
 
@@ -124,7 +127,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     let airType = this.flatCells.find(c => c.type.name$ == 'AIR').type;
     this.flatCells.filter(c => c.powerup)
       .forEach(powerCell => {
-        let newPowerUpCell = getRandomFromArray(this.getNearCells(centerCell).filter(c => !c.powerup && c));
+        let newPowerUpCell = this.getRandomFromArray(this.getNearCells(centerCell).filter(c => !c.powerup && c));
         newPowerUpCell.powerup = powerCell.powerup;
         newPowerUpCell.type = airType;
 
@@ -133,7 +136,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   private getLivingWorms(): Worm[] {
-    return flatMap(this.gameMap.players.toArray().map(p => p.livingWorms.toArray()));
+    return this.flatMap(this.gameMap.players.toArray().map(p => p.livingWorms.toArray()));
   }
 
   private getDashBoard(): Dashboard {
@@ -156,10 +159,15 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     };
   }
 
+  private getArrayRange(count: number = 1) {
+    return [...Array(count)
+      .keys()];
+  }
+
   private getMapStyle(map: GameMap, config: GameConfig): GameMap {
     let cellSize = 900 / map.size;
     map.mapStyle = {
-      gridStyle: getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
+      gridStyle: this.getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
       cellSize,
       powerupSize: cellSize * 0.7,
       bananaBombScale: config.agentWorms.bananas.damageRadius * 2 + 1,
@@ -276,10 +284,6 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     return this.flatCells.filter(c => this.shootingDistance(c, center) <= range);
   }
 
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-  }
-
   doPlayerAction(cell: MapCell, action: ActionsEnum) {
     switch (action) {
       case ActionsEnum.NOTHING:
@@ -348,6 +352,22 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     return Object.keys(directions)
       .find(key => directions[key][0] === cell.x - center.x
         && directions[key][1] === cell.y - center.y);
+  }
+
+  private clone(obj: any): any {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  private getRandomFromArray(array: any[]) {
+    return array[Math.floor((Math.random() * array.length))];
+  }
+
+  private getRandomInteger(max: number = 9) {
+    return Math.round(Math.random() * max);
+  }
+
+  private flatMap(array: any[]) {
+    return array.reduce((acc, x) => acc.concat(x), []);
   }
 
   cheatKillPlayer2() {
