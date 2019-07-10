@@ -8,7 +8,7 @@
     "diggingRange": 1,
     "weapon": {
       "damage": 30,
-      "range": 4
+      "range": 3
     },
     "professionName": "Commando"
   },
@@ -22,7 +22,7 @@
       "range": 4
     },
     "bananas": {
-      "damage": 80,
+      "damage": 20,
       "range": 3,
       "count": 3,
       "damageRadius": 2
@@ -31,7 +31,7 @@
   },
   "pushbackDamage": 20,
   "mapSize": 11,
-  "healthPackHp": 10,
+  "healthPackHp": 30,
   "totalHealthPacks": 2,
   "scores": {
     "missedAttack": 2,
@@ -44,7 +44,7 @@
     "invalidCommand": -4
   },
   "wormSelectTokens": {
-    "count": 5
+    "count": 3
   },
   "csvSeparator": ","
 }

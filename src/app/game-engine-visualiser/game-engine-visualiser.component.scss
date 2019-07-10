@@ -1,7 +1,7 @@
 @import '../../styles';
 
-$theme-blue: rgb(0, 176, 240);
-$theme-orange: rgb(244, 145, 0);
+$theme-blue: #00b0f0;
+$theme-orange: #f49100;
 $theme-panel-backing: rgba(0, 0, 0, 0.67);
 
 $light-green: #47ff3fff;
@@ -113,6 +113,7 @@ $banana-throw-air-time: 750ms;
         width: 100%;
         display: grid;
         grid-template-columns: max-content max-content max-content;
+        grid-template-rows: max-content auto;
         grid-gap: 4px;
 
         // @formatter:off
@@ -342,7 +343,7 @@ $banana-throw-air-time: 750ms;
   display: grid;
 
   .worm-icon {
-    height: 75%;
+    height: 90%;
     place-self: center;
   }
 
