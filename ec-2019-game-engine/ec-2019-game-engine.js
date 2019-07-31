@@ -21,7 +21,6 @@
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
   var ensureNotNull = Kotlin.ensureNotNull;
-  var IntRange = Kotlin.kotlin.ranges.IntRange;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var equals = Kotlin.equals;
@@ -31,13 +30,15 @@
   var split = Kotlin.kotlin.text.split_ip8yn$;
   var toIntOrNull = Kotlin.kotlin.text.toIntOrNull_pdl1vz$;
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
+  var IntRange = Kotlin.kotlin.ranges.IntRange;
   var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
   var any = Kotlin.kotlin.collections.any_7wnvza$;
   var distinct = Kotlin.kotlin.collections.distinct_7wnvza$;
+  var Pair = Kotlin.kotlin.Pair;
+  var coerceIn = Kotlin.kotlin.ranges.coerceIn_nig4hr$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var sortedWith = Kotlin.kotlin.collections.sortedWith_eknfly$;
-  var Pair = Kotlin.kotlin.Pair;
   var flatten = Kotlin.kotlin.collections.flatten_u0ad8z$;
   var math = Kotlin.kotlin.math;
   var numberToInt = Kotlin.numberToInt;
@@ -52,17 +53,19 @@
   var toMutableList = Kotlin.kotlin.collections.toMutableList_4c7yge$;
   var getValue = Kotlin.kotlin.collections.getValue_t9ocha$;
   var throwUPAE = Kotlin.throwUPAE;
-  var plus = Kotlin.kotlin.collections.plus_mydzjv$;
+  var coerceAtLeast = Kotlin.kotlin.ranges.coerceAtLeast_dqglrj$;
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var toMutableMap = Kotlin.kotlin.collections.toMutableMap_abgq59$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
   var Map = Kotlin.kotlin.collections.Map;
   var throwCCE = Kotlin.throwCCE;
   var lastOrNull = Kotlin.kotlin.collections.lastOrNull_2p1efm$;
   var joinToString = Kotlin.kotlin.collections.joinToString_fmv235$;
+  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
   var chunked = Kotlin.kotlin.collections.chunked_ba2ldo$;
   var joinToString_0 = Kotlin.kotlin.collections.joinToString_cgipc5$;
-  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
+  var UnsupportedOperationException_init = Kotlin.kotlin.UnsupportedOperationException_init_pdl1vj$;
+  var plus = Kotlin.kotlin.collections.plus_mydzjv$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var toShort = Kotlin.toShort;
@@ -85,6 +88,10 @@
   ShootCommandFeedback.prototype.constructor = ShootCommandFeedback;
   ShootResult.prototype = Object.create(Enum.prototype);
   ShootResult.prototype.constructor = ShootResult;
+  SnowballCommandFeedback.prototype = Object.create(CommandFeedback.prototype);
+  SnowballCommandFeedback.prototype.constructor = SnowballCommandFeedback;
+  SnowballResult.prototype = Object.create(Enum.prototype);
+  SnowballResult.prototype.constructor = SnowballResult;
   TeleportCommandFeedback.prototype = Object.create(CommandFeedback.prototype);
   TeleportCommandFeedback.prototype.constructor = TeleportCommandFeedback;
   TeleportResult.prototype = Object.create(Enum.prototype);
@@ -107,7 +114,12 @@
       return 'Executing command ' + this$CommandExecutor.worm + ' Command(' + this$CommandExecutor.command_0 + ') ' + this$CommandExecutor.moveValidation_0 + ' ';
     };
   }
-  function CommandExecutor$execute$lambda_0(this$CommandExecutor, closure$commandFeedback) {
+  function CommandExecutor$execute$lambda_0(this$CommandExecutor) {
+    return function () {
+      return 'Tried to execute command ' + this$CommandExecutor.command_0 + ', but ' + this$CommandExecutor.worm + ' is still frozen for ' + this$CommandExecutor.worm.roundsUntilUnfrozen + ' round';
+    };
+  }
+  function CommandExecutor$execute$lambda_1(this$CommandExecutor, closure$commandFeedback) {
     return function () {
       return 'Executed command ' + this$CommandExecutor.worm + ' ' + closure$commandFeedback;
     };
@@ -122,9 +134,13 @@
     }
      else
       this.player_0.consecutiveDoNothingsCount = 0;
-    if (this.moveValidation_0.isValid) {
+    if (this.worm.roundsUntilUnfrozen > 0) {
+      CommandExecutor$Companion_getInstance().logger_0.info_nq59yw$(CommandExecutor$execute$lambda_0(this));
+      this.map_0.addFeedback_xntwic$(new StandardCommandFeedback(this.command_0.toString(), 0, this.player_0.id, false, 'Frozen worms cannot follow your commands', new VisualizerEvent(CommandStrings$NOTHING_getInstance().string, 'frozen', this.worm, null, null, null)));
+    }
+     else if (this.moveValidation_0.isValid) {
       var commandFeedback = this.command_0.execute_h65yh6$(this.map_0, this.worm);
-      CommandExecutor$Companion_getInstance().logger_0.info_nq59yw$(CommandExecutor$execute$lambda_0(this, commandFeedback));
+      CommandExecutor$Companion_getInstance().logger_0.info_nq59yw$(CommandExecutor$execute$lambda_1(this, commandFeedback));
       tmp$ = this.player_0;
       tmp$.commandScore = tmp$.commandScore + commandFeedback.score | 0;
       this.map_0.addFeedback_xntwic$(commandFeedback);
@@ -182,8 +198,9 @@
     CommandStrings$DIG_instance = new CommandStrings('DIG', 1, 'dig');
     CommandStrings$SHOOT_instance = new CommandStrings('SHOOT', 2, 'shoot');
     CommandStrings$BANANA_instance = new CommandStrings('BANANA', 3, 'banana');
-    CommandStrings$SELECT_instance = new CommandStrings('SELECT', 4, 'select');
-    CommandStrings$NOTHING_instance = new CommandStrings('NOTHING', 5, 'nothing');
+    CommandStrings$SNOWBALL_instance = new CommandStrings('SNOWBALL', 4, 'snowball');
+    CommandStrings$SELECT_instance = new CommandStrings('SELECT', 5, 'select');
+    CommandStrings$NOTHING_instance = new CommandStrings('NOTHING', 6, 'nothing');
   }
   var CommandStrings$MOVE_instance;
   function CommandStrings$MOVE_getInstance() {
@@ -205,6 +222,11 @@
     CommandStrings_initFields();
     return CommandStrings$BANANA_instance;
   }
+  var CommandStrings$SNOWBALL_instance;
+  function CommandStrings$SNOWBALL_getInstance() {
+    CommandStrings_initFields();
+    return CommandStrings$SNOWBALL_instance;
+  }
   var CommandStrings$SELECT_instance;
   function CommandStrings$SELECT_getInstance() {
     CommandStrings_initFields();
@@ -221,7 +243,7 @@
     interfaces: [Enum]
   };
   function CommandStrings$values() {
-    return [CommandStrings$MOVE_getInstance(), CommandStrings$DIG_getInstance(), CommandStrings$SHOOT_getInstance(), CommandStrings$BANANA_getInstance(), CommandStrings$SELECT_getInstance(), CommandStrings$NOTHING_getInstance()];
+    return [CommandStrings$MOVE_getInstance(), CommandStrings$DIG_getInstance(), CommandStrings$SHOOT_getInstance(), CommandStrings$BANANA_getInstance(), CommandStrings$SNOWBALL_getInstance(), CommandStrings$SELECT_getInstance(), CommandStrings$NOTHING_getInstance()];
   }
   CommandStrings.values = CommandStrings$values;
   function CommandStrings$valueOf(name) {
@@ -234,6 +256,8 @@
         return CommandStrings$SHOOT_getInstance();
       case 'BANANA':
         return CommandStrings$BANANA_getInstance();
+      case 'SNOWBALL':
+        return CommandStrings$SNOWBALL_getInstance();
       case 'SELECT':
         return CommandStrings$SELECT_getInstance();
       case 'NOTHING':
@@ -548,6 +572,77 @@
     }
   }
   ShootResult.valueOf_61zpoe$ = ShootResult$valueOf;
+  function SnowballCommandFeedback(command, worm, score, result, target, affectedCells) {
+    CommandFeedback.call(this, command, score, worm.player.id, result !== SnowballResult$DEEP_SPACE_getInstance());
+    this.result = result;
+    this.target = target;
+    this.start_0 = worm.position;
+    this.message_1eq6n$_0 = 'Snowball hit ' + this.result + ' at ' + this.target + ' from ' + this.start_0;
+    this.visualizerEvent_4nz49m$_0 = new VisualizerEvent(CommandStrings$SNOWBALL_getInstance().string, this.result.name, worm, this.start_0, this.target, affectedCells);
+  }
+  Object.defineProperty(SnowballCommandFeedback.prototype, 'message', {
+    get: function () {
+      return this.message_1eq6n$_0;
+    }
+  });
+  Object.defineProperty(SnowballCommandFeedback.prototype, 'visualizerEvent', {
+    get: function () {
+      return this.visualizerEvent_4nz49m$_0;
+    }
+  });
+  SnowballCommandFeedback.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SnowballCommandFeedback',
+    interfaces: [CommandFeedback]
+  };
+  function SnowballResult(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function SnowballResult_initFields() {
+    SnowballResult_initFields = function () {
+    };
+    SnowballResult$BULLSEYE_instance = new SnowballResult('BULLSEYE', 0);
+    SnowballResult$TERRAIN_instance = new SnowballResult('TERRAIN', 1);
+    SnowballResult$DEEP_SPACE_instance = new SnowballResult('DEEP_SPACE', 2);
+  }
+  var SnowballResult$BULLSEYE_instance;
+  function SnowballResult$BULLSEYE_getInstance() {
+    SnowballResult_initFields();
+    return SnowballResult$BULLSEYE_instance;
+  }
+  var SnowballResult$TERRAIN_instance;
+  function SnowballResult$TERRAIN_getInstance() {
+    SnowballResult_initFields();
+    return SnowballResult$TERRAIN_instance;
+  }
+  var SnowballResult$DEEP_SPACE_instance;
+  function SnowballResult$DEEP_SPACE_getInstance() {
+    SnowballResult_initFields();
+    return SnowballResult$DEEP_SPACE_instance;
+  }
+  SnowballResult.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SnowballResult',
+    interfaces: [Enum]
+  };
+  function SnowballResult$values() {
+    return [SnowballResult$BULLSEYE_getInstance(), SnowballResult$TERRAIN_getInstance(), SnowballResult$DEEP_SPACE_getInstance()];
+  }
+  SnowballResult.values = SnowballResult$values;
+  function SnowballResult$valueOf(name) {
+    switch (name) {
+      case 'BULLSEYE':
+        return SnowballResult$BULLSEYE_getInstance();
+      case 'TERRAIN':
+        return SnowballResult$TERRAIN_getInstance();
+      case 'DEEP_SPACE':
+        return SnowballResult$DEEP_SPACE_getInstance();
+      default:throwISE('No enum constant za.co.entelect.challenge.game.engine.command.feedback.SnowballResult.' + name);
+    }
+  }
+  SnowballResult.valueOf_61zpoe$ = SnowballResult$valueOf;
   function TeleportCommandFeedback(command, worm, score, result, start, end) {
     CommandFeedback.call(this, command, score, worm.player.id, result === TeleportResult$MOVED_getInstance());
     this.message_psoaig$_0 = 'Worm ' + result + ' from ' + start + ' to ' + end;
@@ -646,30 +741,9 @@
     }
     return tmp$;
   };
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var collectionSizeOrDefault = Kotlin.kotlin.collections.collectionSizeOrDefault_ba2ldo$;
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
-  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_287e2$;
-  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
-  BananaCommand.prototype.getAllPointsOfSquare_0 = function (start, end) {
-    var $receiver = new IntRange(start, end);
-    var destination = ArrayList_init_0();
-    var tmp$;
-    tmp$ = $receiver.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var $receiver_0 = new IntRange(start, end);
-      var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
-      var tmp$_0;
-      tmp$_0 = $receiver_0.iterator();
-      while (tmp$_0.hasNext()) {
-        var item = tmp$_0.next();
-        destination_0.add_11rb$(new Point(element, item));
-      }
-      var list = destination_0;
-      addAll(destination, list);
-    }
-    return destination;
-  };
+  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   BananaCommand.prototype.execute_h65yh6$ = function (gameMap, worm) {
     var wormBananas = ensureNotNull(worm.bananas);
     wormBananas.count = wormBananas.count - 1 | 0;
@@ -683,9 +757,9 @@
     var enemyWormHit = gameMap.get_kszl2s$(this.target).isOccupied() ? BananaResult$BULLSEYE_getInstance() : BananaResult$TERRAIN_getInstance();
     var iOffset = this.target.x - damageRadius | 0;
     var jOffset = this.target.y - damageRadius | 0;
-    var affectedCells = ArrayList_init_0();
-    var $receiver = this.getAllPointsOfSquare_0(0, damageRadius * 2 | 0);
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var affectedCells = ArrayList_init();
+    var $receiver = Point$Companion_getInstance().getAllPointsOfASquare_vux9f0$(0, damageRadius * 2 | 0);
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -1148,6 +1222,97 @@
     simpleName: 'ShootCommand',
     interfaces: [WormsCommand]
   };
+  function SnowballCommand(target, config) {
+    this.target = target;
+    this.config = config;
+    this.order_6ovy74$_0 = 3;
+  }
+  Object.defineProperty(SnowballCommand.prototype, 'order', {
+    get: function () {
+      return this.order_6ovy74$_0;
+    }
+  });
+  SnowballCommand.prototype.validate_h65yh6$ = function (gameMap, worm) {
+    var tmp$;
+    if (worm.snowballs == null)
+      tmp$ = CommandValidation$Companion_getInstance().invalidMove_61zpoe$('This worm is not technically adept in the arts of snowball fights');
+    else {
+      var tmp$_0;
+      if (((tmp$_0 = worm.snowballs) != null ? tmp$_0.count : null) === 0)
+        tmp$ = CommandValidation$Companion_getInstance().invalidMove_61zpoe$('No snowballs bombs in inventory');
+      else if (!gameMap.contains_kszl2s$(this.target))
+        tmp$ = CommandValidation$Companion_getInstance().invalidMove_61zpoe$(this.target.toString() + ' out of map bounds');
+      else {
+        var tmp$_1;
+        if (this.target.shootingDistance_kszl2s$(worm.position) > ensureNotNull((tmp$_1 = worm.snowballs) != null ? tmp$_1.range : null))
+          tmp$ = CommandValidation$Companion_getInstance().invalidMove_61zpoe$('Cell ' + this.target + ' is too far away');
+        else
+          tmp$ = CommandValidation$Companion_getInstance().validMove_8kj6y5$();
+      }
+    }
+    return tmp$;
+  };
+  SnowballCommand.prototype.execute_h65yh6$ = function (gameMap, worm) {
+    var wormSnowballs = ensureNotNull(worm.snowballs);
+    wormSnowballs.count = wormSnowballs.count - 1 | 0;
+    if (gameMap.get_kszl2s$(this.target).type === CellType$DEEP_SPACE_getInstance()) {
+      return new SnowballCommandFeedback(this.toString(), worm, this.config.scores.missedAttack, SnowballResult$DEEP_SPACE_getInstance(), this.target, emptyList());
+    }
+    var freezeRadius = wormSnowballs.freezeRadius;
+    var freezeDuration = wormSnowballs.freezeDuration;
+    var wormsFrozen = {v: 0};
+    var enemyWormHit = gameMap.get_kszl2s$(this.target).isOccupied() ? SnowballResult$BULLSEYE_getInstance() : SnowballResult$TERRAIN_getInstance();
+    var iOffset = this.target.x - freezeRadius | 0;
+    var jOffset = this.target.y - freezeRadius | 0;
+    var affectedCells = ArrayList_init();
+    var $receiver = Point$Companion_getInstance().getAllPointsOfASquare_vux9f0$(0, freezeRadius * 2 | 0);
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var item = tmp$.next();
+      destination.add_11rb$(item.plus_kszl2s$(new Point(iOffset, jOffset)));
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    loop_label: while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      action$break: do {
+        var tmp$_1;
+        if (!gameMap.contains_kszl2s$(element)) {
+          break action$break;
+        }
+        var cell = gameMap.get_kszl2s$(element);
+        var distance = cell.position.manhattanDistance_kszl2s$(this.target);
+        if (distance > (freezeRadius * 2 | 0)) {
+          break action$break;
+        }
+        affectedCells.add_11rb$(cell);
+        if (cell.isOccupied()) {
+          var occupier = ensureNotNull(cell.occupier);
+          var isAlly = (tmp$_1 = occupier.player) != null ? tmp$_1.equals(worm.player) : null;
+          occupier.setAsFrozen_za3lpa$(freezeDuration);
+          if (isAlly) {
+            wormsFrozen.v = wormsFrozen.v - 1 | 0;
+          }
+           else {
+            wormsFrozen.v = wormsFrozen.v + 1 | 0;
+          }
+        }
+      }
+       while (false);
+    }
+    var totalScore = Kotlin.imul(wormsFrozen.v, this.config.scores.freeze);
+    return new SnowballCommandFeedback(this.toString(), worm, totalScore, enemyWormHit, this.target, affectedCells);
+  };
+  SnowballCommand.prototype.toString = function () {
+    return CommandStrings$SNOWBALL_getInstance().string + ' ' + this.target;
+  };
+  SnowballCommand.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SnowballCommand',
+    interfaces: [WormsCommand]
+  };
   function TeleportCommand(target, random, config) {
     this.target = target;
     this.random_0 = random;
@@ -1230,31 +1395,36 @@
     simpleName: 'WormsCommand',
     interfaces: []
   };
-  function GameConfig(maxRounds, maxDoNothings, pushbackDamage, commandoWorms, agentWorms, mapSize, healthPackHp, totalHealthPacks, scores, csvSeparator, wormSelectTokens) {
+  function GameConfig(maxRounds, maxDoNothings, pushbackDamage, lavaDamage, commandoWorms, agentWorms, technologistWorms, mapSize, healthPackHp, totalHealthPacks, scores, csvSeparator, wormSelectTokens, battleRoyaleStart, battleRoyaleEnd) {
     this.maxRounds = maxRounds;
     this.maxDoNothings = maxDoNothings;
     this.pushbackDamage = pushbackDamage;
+    this.lavaDamage = lavaDamage;
     this.commandoWorms = commandoWorms;
     this.agentWorms = agentWorms;
+    this.technologistWorms = technologistWorms;
     this.mapSize = mapSize;
     this.healthPackHp = healthPackHp;
     this.totalHealthPacks = totalHealthPacks;
     this.scores = scores;
     this.csvSeparator = csvSeparator;
     this.wormSelectTokens = wormSelectTokens;
+    this.battleRoyaleStart = battleRoyaleStart;
+    this.battleRoyaleEnd = battleRoyaleEnd;
   }
   GameConfig.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'GameConfig',
     interfaces: []
   };
-  function PlayerWormDefinition(count, initialHp, movementRage, diggingRange, weapon, bananas, professionName) {
+  function PlayerWormDefinition(count, initialHp, movementRage, diggingRange, weapon, bananas, snowballs, professionName) {
     this.count = count;
     this.initialHp = initialHp;
     this.movementRage = movementRage;
     this.diggingRange = diggingRange;
     this.weapon = weapon;
     this.bananas = bananas;
+    this.snowballs = snowballs;
     this.professionName = professionName;
   }
   PlayerWormDefinition.$metadata$ = {
@@ -1262,11 +1432,12 @@
     simpleName: 'PlayerWormDefinition',
     interfaces: []
   };
-  function Scores(attack, killShot, missedAttack, powerup, dig, move, invalidCommand, doNothing) {
+  function Scores(attack, killShot, missedAttack, powerup, freeze, dig, move, invalidCommand, doNothing) {
     this.attack = attack;
     this.killShot = killShot;
     this.missedAttack = missedAttack;
     this.powerup = powerup;
+    this.freeze = freeze;
     this.dig = dig;
     this.move = move;
     this.invalidCommand = invalidCommand;
@@ -1308,6 +1479,8 @@
       tmp$_0 = this.shootCommand_0(splitCommand);
     else if (equals(tmp$, CommandStrings$BANANA_getInstance().string))
       tmp$_0 = this.bananaCommand_0(splitCommand);
+    else if (equals(tmp$, CommandStrings$SNOWBALL_getInstance().string))
+      tmp$_0 = this.snowballCommand_0(splitCommand);
     else if (equals(tmp$, CommandStrings$SELECT_getInstance().string))
       tmp$_0 = this.selectCommand_0(splitCommand);
     else if (equals(tmp$, CommandStrings$NOTHING_getInstance().string))
@@ -1315,6 +1488,19 @@
     else
       tmp$_0 = new InvalidCommand('Unknown command: ' + rawCommand);
     return tmp$_0;
+  };
+  CommandParser.prototype.snowballCommand_0 = function (splitCommand) {
+    var tmp$;
+    if (splitCommand.size !== 3) {
+      return new InvalidCommand('Cannot parse snowball command: Invalid length ' + splitCommand.size + ', expected 3');
+    }
+    var x = toIntOrNull(splitCommand.get_za3lpa$(1));
+    var y = toIntOrNull(splitCommand.get_za3lpa$(2));
+    if (x == null || y == null)
+      tmp$ = new InvalidCommand('Cannot parse coordinates: Invalid coordinate x:' + toString(x) + ' y:' + toString(y));
+    else
+      tmp$ = new SnowballCommand(new Point(x, y), this.config_0);
+    return tmp$;
   };
   CommandParser.prototype.bananaCommand_0 = function (splitCommand) {
     var tmp$;
@@ -1424,6 +1610,7 @@
     CellType$AIR_instance = new CellType('AIR', 0, false, true, '\u2591\u2591');
     CellType$DIRT_instance = new CellType('DIRT', 1, true, false, '\u2593\u2593');
     CellType$DEEP_SPACE_instance = new CellType('DEEP_SPACE', 2, false, false, '\u2588\u2588');
+    CellType$LAVA_instance = new CellType('LAVA', 3, false, true, 'XX');
   }
   Object.defineProperty(CellType.prototype, 'printable', {
     get: function () {
@@ -1445,13 +1632,18 @@
     CellType_initFields();
     return CellType$DEEP_SPACE_instance;
   }
+  var CellType$LAVA_instance;
+  function CellType$LAVA_getInstance() {
+    CellType_initFields();
+    return CellType$LAVA_instance;
+  }
   CellType.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'CellType',
     interfaces: [Printable, Enum]
   };
   function CellType$values() {
-    return [CellType$AIR_getInstance(), CellType$DIRT_getInstance(), CellType$DEEP_SPACE_getInstance()];
+    return [CellType$AIR_getInstance(), CellType$DIRT_getInstance(), CellType$DEEP_SPACE_getInstance(), CellType$LAVA_getInstance()];
   }
   CellType.values = CellType$values;
   function CellType$valueOf(name) {
@@ -1462,6 +1654,8 @@
         return CellType$DIRT_getInstance();
       case 'DEEP_SPACE':
         return CellType$DEEP_SPACE_getInstance();
+      case 'LAVA':
+        return CellType$LAVA_getInstance();
       default:throwISE('No enum constant za.co.entelect.challenge.game.engine.map.CellType.' + name);
     }
   }
@@ -1579,6 +1773,7 @@
     return $this;
   }
   function Point(x, y) {
+    Point$Companion_getInstance();
     this.x = x;
     this.y = y;
   }
@@ -1622,8 +1817,44 @@
     return new Point(this.x + other.x | 0, this.y + other.y | 0);
   };
   Point.prototype.toString = function () {
-    return '(' + this.x + ', ' + this.y + ')';
+    return this.x.toString() + ' ' + this.y;
   };
+  function Point$Companion() {
+    Point$Companion_instance = this;
+  }
+  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
+  Point$Companion.prototype.getAllPointsOfASquare_vux9f0$ = function (start, end) {
+    var $receiver = new IntRange(start, end);
+    var destination = ArrayList_init();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var $receiver_0 = new IntRange(start, end);
+      var destination_0 = ArrayList_init_0(collectionSizeOrDefault($receiver_0, 10));
+      var tmp$_0;
+      tmp$_0 = $receiver_0.iterator();
+      while (tmp$_0.hasNext()) {
+        var item = tmp$_0.next();
+        destination_0.add_11rb$(new Point(element, item));
+      }
+      var list = destination_0;
+      addAll(destination, list);
+    }
+    return destination;
+  };
+  Point$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Point$Companion_instance = null;
+  function Point$Companion_getInstance() {
+    if (Point$Companion_instance === null) {
+      new Point$Companion();
+    }
+    return Point$Companion_instance;
+  }
   Point.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Point',
@@ -1661,10 +1892,10 @@
     this.allFeedback_0 = LinkedHashMap_init();
     this.currentRound_81ybcf$_0 = 0;
     this.cells_wj2s9r$_0 = null;
-    this.errorList_0 = ArrayList_init_0();
+    this.errorList_0 = ArrayList_init();
     this.xRange_0 = until(0, this.size);
     this.yRange_0 = until(0, this.size);
-    this.refereeIssues_0 = ArrayList_init_0();
+    this.refereeIssues_0 = ArrayList_init();
     var requiredSize = Kotlin.imul(this.size, this.size);
     if (cells.size !== requiredSize) {
       throw IllegalArgumentException_init('Need ' + requiredSize + ' cells to fill the map, received ' + cells.size);
@@ -1705,7 +1936,7 @@
   Object.defineProperty(WormsMap.prototype, 'currentRoundErrors', {
     get: function () {
       var $receiver = this.errorList_0;
-      var destination = ArrayList_init_0();
+      var destination = ArrayList_init();
       var tmp$;
       tmp$ = $receiver.iterator();
       while (tmp$.hasNext()) {
@@ -1719,7 +1950,7 @@
   Object.defineProperty(WormsMap.prototype, 'livingPlayers', {
     get: function () {
       var $receiver = this.players;
-      var destination = ArrayList_init_0();
+      var destination = ArrayList_init();
       var tmp$;
       tmp$ = $receiver.iterator();
       while (tmp$.hasNext()) {
@@ -1769,7 +2000,7 @@
     var tmp$;
     var value = $receiver.get_11rb$(key);
     if (value == null) {
-      var answer = ArrayList_init_0();
+      var answer = ArrayList_init();
       $receiver.put_xwzc9p$(key, answer);
       tmp$ = answer;
     }
@@ -1784,7 +2015,7 @@
   };
   WormsMap.prototype.removeDeadWorms = function () {
     var $receiver = this.players;
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -1792,7 +2023,7 @@
       var list = element.worms;
       addAll(destination, list);
     }
-    var destination_0 = ArrayList_init_0();
+    var destination_0 = ArrayList_init();
     var tmp$_0;
     tmp$_0 = destination.iterator();
     while (tmp$_0.hasNext()) {
@@ -1818,7 +2049,7 @@
       var tmp$_0_0;
       var value = destination.get_11rb$(key);
       if (value == null) {
-        var answer = ArrayList_init_0();
+        var answer = ArrayList_init();
         destination.put_xwzc9p$(key, answer);
         tmp$_0_0 = answer;
       }
@@ -1863,7 +2094,7 @@
   };
   WormsMap.prototype.applyHealthPacks = function () {
     var $receiver = this.players;
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -1899,7 +2130,7 @@
   };
   WormsMap.prototype.setScoresForKilledWorms_8h9dqi$ = function (config) {
     var $receiver = this.players;
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -1907,7 +2138,7 @@
       var list = element.worms;
       addAll(destination, list);
     }
-    var destination_0 = ArrayList_init_0();
+    var destination_0 = ArrayList_init();
     var tmp$_0;
     tmp$_0 = destination.iterator();
     while (tmp$_0.hasNext()) {
@@ -1915,20 +2146,47 @@
       if (element_0.dead && any(element_0.lastAttackedBy))
         destination_0.add_11rb$(element_0);
     }
+    var destination_1 = ArrayList_init();
     var tmp$_1;
     tmp$_1 = destination_0.iterator();
     while (tmp$_1.hasNext()) {
       var element_1 = tmp$_1.next();
+      var $receiver_0 = distinct(element_1.lastAttackedBy);
+      var destination_2 = ArrayList_init_0(collectionSizeOrDefault($receiver_0, 10));
       var tmp$_2;
-      tmp$_2 = distinct(element_1.lastAttackedBy).iterator();
+      tmp$_2 = $receiver_0.iterator();
       while (tmp$_2.hasNext()) {
-        var element_2 = tmp$_2.next();
-        if (equals(element_2, element_1.player))
-          element_2.commandScore = element_2.commandScore - config.scores.killShot | 0;
-        else
-          element_2.commandScore = element_2.commandScore + config.scores.killShot | 0;
+        var item = tmp$_2.next();
+        destination_2.add_11rb$(new Pair(element_1, item));
       }
-      element_1.lastAttackedBy.clear();
+      var list_0 = destination_2;
+      addAll(destination_1, list_0);
+    }
+    var tmp$_3;
+    tmp$_3 = destination_1.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_2 = tmp$_3.next();
+      var worm = element_2.component1()
+      , attacker = element_2.component2();
+      if (equals(attacker, worm.player))
+        attacker.commandScore = attacker.commandScore - config.scores.killShot | 0;
+      else
+        attacker.commandScore = attacker.commandScore + config.scores.killShot | 0;
+    }
+    var $receiver_1 = this.players;
+    var destination_3 = ArrayList_init();
+    var tmp$_4;
+    tmp$_4 = $receiver_1.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_3 = tmp$_4.next();
+      var list_1 = element_3.worms;
+      addAll(destination_3, list_1);
+    }
+    var tmp$_5;
+    tmp$_5 = destination_3.iterator();
+    while (tmp$_5.hasNext()) {
+      var element_4 = tmp$_5.next();
+      element_4.lastAttackedBy.clear();
     }
   };
   var mapNotNullTo$lambda = wrapFunction(function () {
@@ -1946,7 +2204,7 @@
     var tmp$, tmp$_0;
     var tmp$_1;
     if ((tmp$ = this.allFeedback_0.get_11rb$(this.currentRound)) != null) {
-      var destination = ArrayList_init_0();
+      var destination = ArrayList_init();
       var tmp$_2;
       tmp$_2 = tmp$.iterator();
       while (tmp$_2.hasNext()) {
@@ -1961,6 +2219,94 @@
      else
       tmp$_1 = null;
     return (tmp$_0 = tmp$_1) != null ? tmp$_0 : emptyList();
+  };
+  var Collection = Kotlin.kotlin.collections.Collection;
+  WormsMap.prototype.progressBattleRoyale_8h9dqi$ = function (config) {
+    var center = (config.mapSize - 1 | 0) / 2.0;
+    var mapCenter = new Pair(center, center);
+    var brStartRound = config.maxRounds * config.battleRoyaleStart;
+    if (this.currentRound < brStartRound) {
+      return;
+    }
+    var brEndRound = config.maxRounds * config.battleRoyaleEnd;
+    var fullPercentageRange = (this.currentRound - brStartRound) / (brEndRound - brStartRound);
+    var currentProgress = coerceIn(fullPercentageRange, 0.0, 1.0);
+    var safeAreaRadius = (config.mapSize / 2 | 0) * (1 - currentProgress);
+    var $receiver = this.cells;
+    var destination = ArrayList_init();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (element.type === CellType$AIR_getInstance() && element.position.euclideanDistance_ot2paf$(mapCenter) > safeAreaRadius + 1)
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.type = CellType$LAVA_getInstance();
+    }
+    var $receiver_0 = this.livingPlayers;
+    var destination_0 = ArrayList_init();
+    var tmp$_1;
+    tmp$_1 = $receiver_0.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      var list = element_1.livingWorms;
+      addAll(destination_0, list);
+    }
+    var destination_1 = ArrayList_init();
+    var tmp$_2;
+    tmp$_2 = destination_0.iterator();
+    loop_label: while (tmp$_2.hasNext()) {
+      var element_2 = tmp$_2.next();
+      var $receiver_1 = this.cells;
+      var any$result;
+      any$break: do {
+        var tmp$_3;
+        if (Kotlin.isType($receiver_1, Collection) && $receiver_1.isEmpty()) {
+          any$result = false;
+          break any$break;
+        }
+        tmp$_3 = $receiver_1.iterator();
+        while (tmp$_3.hasNext()) {
+          var element_3 = tmp$_3.next();
+          var tmp$_4;
+          if (element_3.type === CellType$LAVA_getInstance() && ((tmp$_4 = element_3.position) != null ? tmp$_4.equals(element_2.position) : null)) {
+            any$result = true;
+            break any$break;
+          }
+        }
+        any$result = false;
+      }
+       while (false);
+      if (any$result)
+        destination_1.add_11rb$(element_2);
+    }
+    var tmp$_5;
+    tmp$_5 = destination_1.iterator();
+    while (tmp$_5.hasNext()) {
+      var element_4 = tmp$_5.next();
+      element_4.takeDamage_s4o3j$(config.lavaDamage, this.currentRound);
+    }
+  };
+  WormsMap.prototype.tickFrozenTimers = function () {
+    var $receiver = this.livingPlayers;
+    var destination = ArrayList_init();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var list = element.livingWorms;
+      addAll(destination, list);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.tickFrozenTimer();
+    }
   };
   WormsMap.$metadata$ = {
     kind: Kind_CLASS,
@@ -2019,14 +2365,14 @@
     WormsMapGenerator$Companion_getInstance().logger_0.info_nq59yw$(WormsMapGenerator$getMap$lambda(this));
     WormsMapGenerator$Companion_getInstance().logger_0.info_nq59yw$(WormsMapGenerator$getMap$lambda_0);
     var $receiver = until(0, this.config_0.mapSize);
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
       var item = tmp$.next();
       var tmp$_0 = destination.add_11rb$;
       var $receiver_0 = until(0, this.config_0.mapSize);
-      var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+      var destination_0 = ArrayList_init_0(collectionSizeOrDefault($receiver_0, 10));
       var tmp$_1;
       tmp$_1 = $receiver_0.iterator();
       while (tmp$_1.hasNext()) {
@@ -2065,7 +2411,7 @@
     }
   };
   WormsMapGenerator.prototype.setBattleRoyaleMapEdges_0 = function (flatBlankMap) {
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = flatBlankMap.iterator();
     while (tmp$.hasNext()) {
@@ -2084,7 +2430,7 @@
     if (tilt === void 0)
       tilt = 0.0;
     var $receiver = until(0, count);
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -2122,7 +2468,7 @@
   WormsMapGenerator.prototype.createWormWalledSpawnLocations_0 = function (wormsPlayers, blankMap) {
     var dirtChar = String.fromCharCode(35);
     var $receiver = lines(trimMargin('\n            |#####\n            |#...#\n            |#...#\n            |#...#\n            |#####\n            '));
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$, tmp$_0;
     var index = 0;
     tmp$ = $receiver.iterator();
@@ -2133,7 +2479,7 @@
       var offset = item.length / 2 | 0;
       var tmp$_2;
       var $receiver_0 = split(trim(Kotlin.isCharSequence(tmp$_2 = item) ? tmp$_2 : throwCCE()).toString(), ['']);
-      var destination_0 = ArrayList_init_0();
+      var destination_0 = ArrayList_init();
       var tmp$_3;
       tmp$_3 = $receiver_0.iterator();
       while (tmp$_3.hasNext()) {
@@ -2141,7 +2487,7 @@
         if (element.length > 0)
           destination_0.add_11rb$(element);
       }
-      var destination_1 = ArrayList_init(collectionSizeOrDefault(destination_0, 10));
+      var destination_1 = ArrayList_init_0(collectionSizeOrDefault(destination_0, 10));
       var tmp$_4, tmp$_0_0;
       var index_0 = 0;
       tmp$_4 = destination_0.iterator();
@@ -2155,7 +2501,7 @@
       tmp$_1.call(destination, destination_1);
     }
     var spawnRoom = flatten(destination);
-    var destination_2 = ArrayList_init_0();
+    var destination_2 = ArrayList_init();
     var tmp$_6;
     tmp$_6 = wormsPlayers.iterator();
     while (tmp$_6.hasNext()) {
@@ -2282,7 +2628,7 @@
   var mapCapacity = Kotlin.kotlin.collections.mapCapacity_za3lpa$;
   var LinkedHashMap_init_0 = Kotlin.kotlin.collections.LinkedHashMap_init_bwtc7$;
   WormsMapGenerator.prototype.setWormsIntoSpawnLocations_0 = function (blankMap, wormsPlayers) {
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = wormsPlayers.iterator();
     while (tmp$.hasNext()) {
@@ -2300,7 +2646,7 @@
       var tmp$_0_0;
       var value = destination_0.get_11rb$(key);
       if (value == null) {
-        var answer = ArrayList_init_0();
+        var answer = ArrayList_init();
         destination_0.put_xwzc9p$(key, answer);
         tmp$_0_0 = answer;
       }
@@ -2385,16 +2731,16 @@
   function AgentWorm() {
     AgentWorm_instance = this;
   }
-  AgentWorm.prototype.buildWithPositions = function (id, config, position) {
-    return Worm_init(id, config.agentWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
+  AgentWorm.prototype.build_gi77j4$ = function (id, config, position) {
+    return Worm_init(id, config.agentWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), void 0, config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
   };
-  AgentWorm.prototype.build = function (id, config) {
-    return new Worm(id, config.agentWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), config.agentWorms.diggingRange, config.agentWorms.movementRage, config.agentWorms.professionName);
+  AgentWorm.prototype.build_93d6f4$ = function (id, config) {
+    return new Worm(id, config.agentWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.agentWorms.weapon), Bananas$Companion_getInstance().fromBananas_ok0wac$(config.agentWorms.bananas), void 0, config.agentWorms.diggingRange, config.agentWorms.movementRage, void 0, config.agentWorms.professionName);
   };
   AgentWorm.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'AgentWorm',
-    interfaces: []
+    interfaces: [WormBuilder]
   };
   var AgentWorm_instance = null;
   function AgentWorm_getInstance() {
@@ -2470,16 +2816,16 @@
   function CommandoWorm() {
     CommandoWorm_instance = this;
   }
-  CommandoWorm.prototype.buildWithPositions = function (id, config, position) {
-    return Worm_init(id, config.commandoWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
+  CommandoWorm.prototype.build_gi77j4$ = function (id, config, position) {
+    return Worm_init(id, config.commandoWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
   };
-  CommandoWorm.prototype.build = function (id, config) {
-    return new Worm(id, config.commandoWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, config.commandoWorms.professionName);
+  CommandoWorm.prototype.build_93d6f4$ = function (id, config) {
+    return new Worm(id, config.commandoWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.commandoWorms.weapon), void 0, void 0, config.commandoWorms.diggingRange, config.commandoWorms.movementRage, void 0, config.commandoWorms.professionName);
   };
   CommandoWorm.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'CommandoWorm',
-    interfaces: []
+    interfaces: [WormBuilder]
   };
   var CommandoWorm_instance = null;
   function CommandoWorm_getInstance() {
@@ -2487,6 +2833,91 @@
       new CommandoWorm();
     }
     return CommandoWorm_instance;
+  }
+  function Snowballs(freezeDuration, range, count, freezeRadius) {
+    Snowballs$Companion_getInstance();
+    this.freezeDuration = freezeDuration;
+    this.range = range;
+    this.count = count;
+    this.freezeRadius = freezeRadius;
+  }
+  function Snowballs$Companion() {
+    Snowballs$Companion_instance = this;
+  }
+  Snowballs$Companion.prototype.fromSnowballs_ah2773$ = function (snowballs) {
+    var tmp$;
+    if (snowballs != null)
+      tmp$ = new Snowballs(snowballs.freezeDuration, snowballs.range, snowballs.count, snowballs.freezeRadius);
+    else
+      tmp$ = null;
+    return tmp$;
+  };
+  Snowballs$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Snowballs$Companion_instance = null;
+  function Snowballs$Companion_getInstance() {
+    if (Snowballs$Companion_instance === null) {
+      new Snowballs$Companion();
+    }
+    return Snowballs$Companion_instance;
+  }
+  Snowballs.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Snowballs',
+    interfaces: []
+  };
+  Snowballs.prototype.component1 = function () {
+    return this.freezeDuration;
+  };
+  Snowballs.prototype.component2 = function () {
+    return this.range;
+  };
+  Snowballs.prototype.component3 = function () {
+    return this.count;
+  };
+  Snowballs.prototype.component4 = function () {
+    return this.freezeRadius;
+  };
+  Snowballs.prototype.copy_tjonv8$ = function (freezeDuration, range, count, freezeRadius) {
+    return new Snowballs(freezeDuration === void 0 ? this.freezeDuration : freezeDuration, range === void 0 ? this.range : range, count === void 0 ? this.count : count, freezeRadius === void 0 ? this.freezeRadius : freezeRadius);
+  };
+  Snowballs.prototype.toString = function () {
+    return 'Snowballs(freezeDuration=' + Kotlin.toString(this.freezeDuration) + (', range=' + Kotlin.toString(this.range)) + (', count=' + Kotlin.toString(this.count)) + (', freezeRadius=' + Kotlin.toString(this.freezeRadius)) + ')';
+  };
+  Snowballs.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.freezeDuration) | 0;
+    result = result * 31 + Kotlin.hashCode(this.range) | 0;
+    result = result * 31 + Kotlin.hashCode(this.count) | 0;
+    result = result * 31 + Kotlin.hashCode(this.freezeRadius) | 0;
+    return result;
+  };
+  Snowballs.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.freezeDuration, other.freezeDuration) && Kotlin.equals(this.range, other.range) && Kotlin.equals(this.count, other.count) && Kotlin.equals(this.freezeRadius, other.freezeRadius)))));
+  };
+  function TechnologistWorm() {
+    TechnologistWorm_instance = this;
+  }
+  TechnologistWorm.prototype.build_gi77j4$ = function (id, config, position) {
+    return Worm_init(id, config.technologistWorms.initialHp, position, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.technologistWorms.weapon), void 0, Snowballs$Companion_getInstance().fromSnowballs_ah2773$(config.technologistWorms.snowballs), config.technologistWorms.diggingRange, config.technologistWorms.movementRage, config.technologistWorms.professionName);
+  };
+  TechnologistWorm.prototype.build_93d6f4$ = function (id, config) {
+    return new Worm(id, config.technologistWorms.initialHp, Weapon$Companion_getInstance().fromWeapon_12afb5$(config.technologistWorms.weapon), void 0, Snowballs$Companion_getInstance().fromSnowballs_ah2773$(config.technologistWorms.snowballs), config.technologistWorms.diggingRange, config.technologistWorms.movementRage, void 0, config.technologistWorms.professionName);
+  };
+  TechnologistWorm.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'TechnologistWorm',
+    interfaces: [WormBuilder]
+  };
+  var TechnologistWorm_instance = null;
+  function TechnologistWorm_getInstance() {
+    if (TechnologistWorm_instance === null) {
+      new TechnologistWorm();
+    }
+    return TechnologistWorm_instance;
   }
   function Weapon(damage, range) {
     Weapon$Companion_getInstance();
@@ -2516,22 +2947,28 @@
     simpleName: 'Weapon',
     interfaces: []
   };
-  function Worm(id, health, weapon, bananas, diggingRange, movementRange, profession) {
+  function Worm(id, health, weapon, bananas, snowballs, diggingRange, movementRange, roundsUntilUnfrozen, profession) {
     if (bananas === void 0)
       bananas = null;
+    if (snowballs === void 0)
+      snowballs = null;
+    if (roundsUntilUnfrozen === void 0)
+      roundsUntilUnfrozen = 0;
     this.id = id;
     this.health = health;
     this.weapon = weapon;
     this.bananas = bananas;
+    this.snowballs = snowballs;
     this.diggingRange = diggingRange;
     this.movementRange = movementRange;
+    this.roundsUntilUnfrozen = roundsUntilUnfrozen;
     this.profession = profession;
     this.roundMoved_fj2rkz$_0 = -1;
     this.roundHit_xwo8l9$_0 = -1;
     this.position_8sujuv$_0 = this.position_8sujuv$_0;
     this.previousPosition_vgcpq6$_0 = this.previousPosition_vgcpq6$_0;
     this.player_4l370h$_0 = this.player_4l370h$_0;
-    this.lastAttackedBy = ArrayList_init_0();
+    this.lastAttackedBy = ArrayList_init();
   }
   Object.defineProperty(Worm.prototype, 'printable', {
     get: function () {
@@ -2611,27 +3048,42 @@
       this.lastAttackedBy.add_11rb$(attacker);
     return damage;
   };
+  Worm.prototype.setAsFrozen_za3lpa$ = function (freezeDuration) {
+    this.roundsUntilUnfrozen = freezeDuration;
+  };
   Worm.prototype.toString = function () {
     return 'Worm(player=' + this.player.id + ', id=' + this.id + ')';
+  };
+  Worm.prototype.tickFrozenTimer = function () {
+    this.roundsUntilUnfrozen = coerceAtLeast((this.roundsUntilUnfrozen = this.roundsUntilUnfrozen - 1 | 0, this.roundsUntilUnfrozen), 0);
   };
   Worm.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Worm',
     interfaces: [Printable]
   };
-  function Worm_init(id, health, position, weapon, bananas, diggingRange, movementRange, profession, $this) {
+  function Worm_init(id, health, position, weapon, bananas, snowballs, diggingRange, movementRange, profession, $this) {
     if (bananas === void 0)
       bananas = null;
+    if (snowballs === void 0)
+      snowballs = null;
     if (diggingRange === void 0)
       diggingRange = 1;
     if (movementRange === void 0)
       movementRange = 1;
     $this = $this || Object.create(Worm.prototype);
-    Worm.call($this, id, health, weapon, bananas, diggingRange, movementRange, profession);
+    Worm.call($this, id, health, weapon, bananas, snowballs, diggingRange, movementRange, 0, profession);
     $this.position = position;
     $this.previousPosition = position;
     return $this;
   }
+  function WormBuilder() {
+  }
+  WormBuilder.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'WormBuilder',
+    interfaces: []
+  };
   function WormsPlayer(id, worms, config) {
     WormsPlayer$Companion_getInstance();
     this.id = id;
@@ -2677,7 +3129,6 @@
       return sum;
     }
   });
-  var Collection = Kotlin.kotlin.collections.Collection;
   Object.defineProperty(WormsPlayer.prototype, 'dead', {
     get: function () {
       var $receiver = this.worms;
@@ -2705,7 +3156,7 @@
   Object.defineProperty(WormsPlayer.prototype, 'livingWorms', {
     get: function () {
       var $receiver = this.worms;
-      var destination = ArrayList_init_0();
+      var destination = ArrayList_init();
       var tmp$;
       tmp$ = $receiver.iterator();
       while (tmp$.hasNext()) {
@@ -2756,25 +3207,35 @@
     WormsPlayer$Companion_instance = this;
   }
   WormsPlayer$Companion.prototype.build = function (id, config) {
-    var $receiver = until(0, config.commandoWorms.count);
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var $receiver = listOf([new Pair(CommandoWorm_getInstance(), config.commandoWorms), new Pair(AgentWorm_getInstance(), config.agentWorms), new Pair(TechnologistWorm_getInstance(), config.technologistWorms)]);
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
-      var item = tmp$.next();
-      destination.add_11rb$(CommandoWorm_getInstance().build(item + 1 | 0, config));
+      var element = tmp$.next();
+      var builder = element.component1()
+      , details = element.component2();
+      var $receiver_0 = until(0, details.count);
+      var destination_0 = ArrayList_init_0(collectionSizeOrDefault($receiver_0, 10));
+      var tmp$_0;
+      tmp$_0 = $receiver_0.iterator();
+      while (tmp$_0.hasNext()) {
+        var item = tmp$_0.next();
+        destination_0.add_11rb$(builder);
+      }
+      var list = destination_0;
+      addAll(destination, list);
     }
-    var commandoWorms = destination;
-    var $receiver_0 = until(0, config.agentWorms.count);
-    var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
-    var tmp$_0;
-    tmp$_0 = $receiver_0.iterator();
-    while (tmp$_0.hasNext()) {
-      var item_0 = tmp$_0.next();
-      destination_0.add_11rb$(AgentWorm_getInstance().build(item_0 + 3 | 0, config));
+    var destination_1 = ArrayList_init_0(collectionSizeOrDefault(destination, 10));
+    var tmp$_1, tmp$_0_0;
+    var index = 0;
+    tmp$_1 = destination.iterator();
+    while (tmp$_1.hasNext()) {
+      var item_0 = tmp$_1.next();
+      destination_1.add_11rb$(item_0.build_93d6f4$(checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0)) + 1 | 0, config));
     }
-    var agentWorms = destination_0;
-    return new WormsPlayer(id, plus(commandoWorms, agentWorms), config);
+    var worms = destination_1;
+    return new WormsPlayer(id, worms, config);
   };
   WormsPlayer$Companion.prototype.buildWithWorms = function (id, worms, config) {
     return new WormsPlayer(id, worms, config);
@@ -2875,39 +3336,49 @@
     };
   }
   function WormsRoundProcessor$processRound$lambda_0() {
-    return "Updating player's active worms";
+    return 'Progressing BattleRoyale';
   }
   function WormsRoundProcessor$processRound$lambda_1() {
-    return 'Applying powerups';
+    return 'Ticking worm frozen timers';
   }
   function WormsRoundProcessor$processRound$lambda_2() {
-    return 'Adding kill scores for dead worms';
+    return "Updating player's active worms";
   }
   function WormsRoundProcessor$processRound$lambda_3() {
-    return 'Removing dead worms from the map';
+    return 'Applying powerups';
   }
   function WormsRoundProcessor$processRound$lambda_4() {
+    return 'Adding kill scores for dead worms';
+  }
+  function WormsRoundProcessor$processRound$lambda_5() {
+    return 'Removing dead worms from the map';
+  }
+  function WormsRoundProcessor$processRound$lambda_6() {
     return 'Checking for referee issues';
   }
   WormsRoundProcessor.prototype.processRound_wfe2xc$ = function (wormsMap, wormsCommands) {
     var tmp$;
     WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda(wormsMap));
+    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_0);
+    wormsMap.progressBattleRoyale_8h9dqi$(this.config);
+    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_1);
+    wormsMap.tickFrozenTimers();
     var mutableCommandsMap = toMutableMap(wormsCommands);
     this.executeSelectCommands_0(mutableCommandsMap, wormsMap);
     this.executeOtherCommands_0(mutableCommandsMap, wormsMap);
-    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_0);
+    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_2);
     tmp$ = wormsMap.livingPlayers.iterator();
     while (tmp$.hasNext()) {
       var player = tmp$.next();
       player.selectNextWorm();
     }
-    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_1);
-    wormsMap.applyHealthPacks();
-    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_2);
-    wormsMap.setScoresForKilledWorms_8h9dqi$(this.config);
     WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_3);
-    wormsMap.removeDeadWorms();
+    wormsMap.applyHealthPacks();
     WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_4);
+    wormsMap.setScoresForKilledWorms_8h9dqi$(this.config);
+    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_5);
+    wormsMap.removeDeadWorms();
+    WormsRoundProcessor$Companion_getInstance().logger_0.info_nq59yw$(WormsRoundProcessor$processRound$lambda_6);
     wormsMap.detectRefereeIssues();
     return true;
   };
@@ -2964,7 +3435,7 @@
       var tmp$_0 = destination.put_xwzc9p$;
       var tmp$_1 = element.key;
       var $receiver = element.value;
-      var destination_0 = ArrayList_init_0();
+      var destination_0 = ArrayList_init();
       var tmp$_2;
       tmp$_2 = $receiver.iterator();
       while (tmp$_2.hasNext()) {
@@ -2995,7 +3466,7 @@
       var tmp$_0;
       var value = destination.get_11rb$(key);
       if (value == null) {
-        var answer = ArrayList_init_0();
+        var answer = ArrayList_init();
         destination.put_xwzc9p$(key, answer);
         tmp$_0 = answer;
       }
@@ -3038,7 +3509,7 @@
   Comparator$ObjectLiteral_1.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   WormsRoundProcessor.prototype.buildCommandExecutors_0 = function (commands, wormsMap) {
     var $receiver = sortedWith(commands.entries, new Comparator$ObjectLiteral_1(compareBy$lambda_0(WormsRoundProcessor$buildCommandExecutors$lambda)));
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -3052,7 +3523,7 @@
   };
   WormsRoundProcessor.prototype.getErrorList_fubnl6$ = function (wormsMap, wormsPlayer) {
     var $receiver = wormsMap.currentRoundErrors;
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -3164,6 +3635,7 @@
     this.health = null;
     this.currentWormId = player.currentWorm.id;
     this.remainingWormSelections = player.wormSelectionTokens;
+    this.previousCommand = CommandStrings$NOTHING_getInstance().string;
     this.worms = emptyList();
     this.consoleHealth = player.health;
   }
@@ -3173,10 +3645,10 @@
   PrintablePlayer$Companion.prototype.isPerspectivePlayer_jenssx$ = function (player, perspectivePlayer) {
     return equals(player, perspectivePlayer) || perspectivePlayer == null;
   };
-  PrintablePlayer$Companion.prototype.buildForPerspectivePlayer_jenssx$ = function (player, perspectivePlayer) {
+  PrintablePlayer$Companion.prototype.buildForPerspectivePlayer_oo18uz$ = function (player, perspectivePlayer, wormsMap) {
     var playerForPerspectivePlayer = new PrintablePlayer(player);
     var $receiver = player.worms;
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -3187,7 +3659,66 @@
     if (this.isPerspectivePlayer_jenssx$(player, perspectivePlayer)) {
       playerForPerspectivePlayer.health = player.health;
     }
+    playerForPerspectivePlayer.previousCommand = this.getLastCommand_0(wormsMap, player);
     return playerForPerspectivePlayer;
+  };
+  PrintablePlayer$Companion.prototype.getLastCommand_0 = function (wormsMap, player) {
+    var tmp$;
+    var $receiver = wormsMap.getFeedback_za3lpa$(wormsMap.currentRound - 1 | 0);
+    var destination = ArrayList_init();
+    var tmp$_0;
+    tmp$_0 = $receiver.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      if (element.playerId === player.id)
+        destination.add_11rb$(element);
+    }
+    var feedback = destination;
+    switch (feedback.size) {
+      case 1:
+        tmp$ = feedback.get_za3lpa$(0).command;
+        break;
+      case 2:
+        tmp$ = this.extractSelectCommand_0(feedback);
+        break;
+      default:tmp$ = CommandStrings$NOTHING_getInstance().string;
+        break;
+    }
+    return tmp$;
+  };
+  PrintablePlayer$Companion.prototype.extractSelectCommand_0 = function (feedback) {
+    var tmp$, tmp$_0;
+    var firstOrNull$result;
+    firstOrNull$break: do {
+      var tmp$_1;
+      tmp$_1 = feedback.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
+        if (startsWith(element.command, 'select')) {
+          firstOrNull$result = element;
+          break firstOrNull$break;
+        }
+      }
+      firstOrNull$result = null;
+    }
+     while (false);
+    var selectCommand = firstOrNull$result;
+    var firstOrNull$result_0;
+    firstOrNull$break: do {
+      var tmp$_2;
+      tmp$_2 = feedback.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_0 = tmp$_2.next();
+        if (!startsWith(element_0.command, 'select')) {
+          firstOrNull$result_0 = element_0;
+          break firstOrNull$break;
+        }
+      }
+      firstOrNull$result_0 = null;
+    }
+     while (false);
+    var otherCommand = firstOrNull$result_0;
+    return ((tmp$ = selectCommand != null ? selectCommand.command : null) != null ? tmp$ : CommandStrings$NOTHING_getInstance().string) + '; ' + ((tmp$_0 = otherCommand != null ? otherCommand.command : null) != null ? tmp$_0 : CommandStrings$NOTHING_getInstance().string);
   };
   PrintablePlayer$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -3215,7 +3746,7 @@
     var tmp$;
     var tmp$_0;
     if ((tmp$ = visualizerEvent.affectedCells) != null) {
-      var destination = ArrayList_init(collectionSizeOrDefault(tmp$, 10));
+      var destination = ArrayList_init_0(collectionSizeOrDefault(tmp$, 10));
       var tmp$_1;
       tmp$_1 = tmp$.iterator();
       while (tmp$_1.hasNext()) {
@@ -3241,8 +3772,10 @@
     this.position = new Point(worm.position.x, worm.position.y);
     this.weapon = null;
     this.bananaBombs = null;
+    this.snowballs = null;
     this.diggingRange = worm.diggingRange;
     this.movementRange = worm.movementRange;
+    this.roundsUntilUnfrozen = worm.roundsUntilUnfrozen;
     this.profession = worm.profession;
     this.printable = worm.printable;
   }
@@ -3262,6 +3795,7 @@
     if (PrintablePlayer$Companion_getInstance().isPerspectivePlayer_jenssx$(worm.player, perspectivePlayer)) {
       wormForPerspectivePlayer.weapon = worm.weapon;
       wormForPerspectivePlayer.bananaBombs = worm.bananas;
+      wormForPerspectivePlayer.snowballs = worm.snowballs;
     }
     return wormForPerspectivePlayer;
   };
@@ -3279,6 +3813,7 @@
     result.bananaBombs = null;
     result.diggingRange = null;
     result.movementRange = null;
+    result.roundsUntilUnfrozen = null;
     result.profession = null;
     return result;
   };
@@ -3316,17 +3851,18 @@
     this.currentRound = wormsMap.currentRound;
     this.maxRounds = config.maxRounds;
     this.pushbackDamage = config.pushbackDamage;
+    this.lavaDamage = config.lavaDamage;
     this.mapSize = wormsMap.size;
     var tmp$, tmp$_0;
     this.currentWormId = (tmp$ = player != null ? player.currentWorm : null) != null ? tmp$.id : null;
     this.consecutiveDoNothingCount = player != null ? player.consecutiveDoNothingsCount : null;
     if (player != null)
-      tmp$_0 = PrintablePlayer$Companion_getInstance().buildForPerspectivePlayer_jenssx$(player, player);
+      tmp$_0 = PrintablePlayer$Companion_getInstance().buildForPerspectivePlayer_oo18uz$(player, player, wormsMap);
     else
       tmp$_0 = null;
     this.myPlayer = tmp$_0;
     var $receiver = wormsMap.players;
-    var destination = ArrayList_init_0();
+    var destination = ArrayList_init();
     var tmp$_1;
     tmp$_1 = $receiver.iterator();
     while (tmp$_1.hasNext()) {
@@ -3334,17 +3870,17 @@
       if (!equals(element, player))
         destination.add_11rb$(element);
     }
-    var destination_0 = ArrayList_init(collectionSizeOrDefault(destination, 10));
+    var destination_0 = ArrayList_init_0(collectionSizeOrDefault(destination, 10));
     var tmp$_2;
     tmp$_2 = destination.iterator();
     while (tmp$_2.hasNext()) {
       var item = tmp$_2.next();
-      destination_0.add_11rb$(PrintablePlayer$Companion_getInstance().buildForPerspectivePlayer_jenssx$(item, player));
+      destination_0.add_11rb$(PrintablePlayer$Companion_getInstance().buildForPerspectivePlayer_oo18uz$(item, player, wormsMap));
     }
     this.opponents = destination_0;
     this.map = chunked(this.modifyCellsForPlayer_0(wormsMap.cells, player), wormsMap.size);
     var $receiver_0 = wormsMap.getVisualizerEvents();
-    var destination_1 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+    var destination_1 = ArrayList_init_0(collectionSizeOrDefault($receiver_0, 10));
     var tmp$_3;
     tmp$_3 = $receiver_0.iterator();
     while (tmp$_3.hasNext()) {
@@ -3354,7 +3890,7 @@
     this.visualizerEvents = destination_1;
   }
   WormsGameDetails.prototype.modifyCellsForPlayer_0 = function (arrayMap, player) {
-    var destination = ArrayList_init(collectionSizeOrDefault(arrayMap, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault(arrayMap, 10));
     var tmp$;
     tmp$ = arrayMap.iterator();
     while (tmp$.hasNext()) {
@@ -3404,7 +3940,10 @@
   };
   WormsRendererConsole.prototype.render_63r2jv$ = function (wormsMap, player) {
     var tmp$, tmp$_0;
-    var wormPosition = ensureNotNull(player).currentWorm.position;
+    if (player == null) {
+      throw UnsupportedOperationException_init('Cannot call Console Render with a null player parameter');
+    }
+    var wormPosition = player.currentWorm.position;
     var wormGameDetails = new WormsGameDetails(this.config_0, wormsMap, player);
     var selfPlayer = 'My Player:H=' + toString((tmp$ = wormGameDetails.myPlayer) != null ? tmp$.consoleHealth : null) + ' S=' + toString((tmp$_0 = wormGameDetails.myPlayer) != null ? tmp$_0.score : null) + ' ' + ('W=' + toString(wormGameDetails.currentWormId) + ' X,Y=' + wormPosition.x + ',' + wormPosition.y);
     var tmp$_1;
@@ -3433,9 +3972,12 @@
   };
   WormsRendererCsv.prototype.render_63r2jv$ = function (wormsMap, player) {
     var tmp$, tmp$_0;
+    if (player == null) {
+      throw UnsupportedOperationException_init('Cannot call CSV Render with a null player parameter');
+    }
     if (wormsMap.currentRound === 1) {
-      var $receiver = ensureNotNull(player).worms;
-      var destination = ArrayList_init_0();
+      var $receiver = player.worms;
+      var destination = ArrayList_init();
       var tmp$_1;
       tmp$_1 = $receiver.iterator();
       while (tmp$_1.hasNext()) {
@@ -3456,7 +3998,7 @@
       tmp$_2 = $receiver_0.iterator();
       while (tmp$_2.hasNext()) {
         var element_0 = tmp$_2.next();
-        if (element_0.playerId === ensureNotNull(player).id && !startsWith(element_0.command, 'select')) {
+        if (element_0.playerId === player.id && !startsWith(element_0.command, 'select')) {
           firstOrNull$result = element_0;
           break firstOrNull$break;
         }
@@ -3480,9 +4022,9 @@
      else
       tmp$_3 = null;
     var commandType = tmp$_3;
-    var standardFields = listOf([wormsMap.currentRound, commandType, '"' + toString(command) + '"', ensureNotNull(player).previousWorm.id, player.totalScore, player.health]);
+    var standardFields = listOf([wormsMap.currentRound, commandType, '"' + toString(command) + '"', player.previousWorm.id, player.totalScore, player.health]);
     var $receiver_1 = player.worms;
-    var destination_0 = ArrayList_init_0();
+    var destination_0 = ArrayList_init();
     var tmp$_4;
     tmp$_4 = $receiver_1.iterator();
     while (tmp$_4.hasNext()) {
@@ -3522,14 +4064,17 @@
     return 'Not supported in Text state file';
   };
   WormsRendererText.prototype.render_63r2jv$ = function (wormsMap, player) {
+    if (player == null) {
+      throw UnsupportedOperationException_init('Cannot call Text Render with a null player parameter');
+    }
     var wormGameDetails = new WormsGameDetails(this.config_0, wormsMap, player);
-    var matchDetails = trimMargin('\n' + '            |@01 Match Details' + '\n' + '            |Current round: ' + wormGameDetails.currentRound + '\n' + '            |Max rounds: ' + wormGameDetails.maxRounds + '\n' + '            |Map size: ' + wormGameDetails.mapSize + '\n' + '            |Current worm id: ' + toString(wormGameDetails.currentWormId) + '\n' + '            |Consecutive do nothing count: ' + toString(wormGameDetails.consecutiveDoNothingCount) + '\n' + '            |Players count: ' + wormsMap.players.size + '\n' + '            |Worms per player: ' + first(wormsMap.players).worms.size + '\n' + '            |Pushback damage: ' + wormGameDetails.pushbackDamage + '\n' + '            ');
+    var matchDetails = trimMargin('\n' + '            |@01 Match Details' + '\n' + '            |Current round: ' + wormGameDetails.currentRound + '\n' + '            |Max rounds: ' + wormGameDetails.maxRounds + '\n' + '            |Map size: ' + wormGameDetails.mapSize + '\n' + '            |Current worm id: ' + toString(wormGameDetails.currentWormId) + '\n' + '            |Consecutive do nothing count: ' + toString(wormGameDetails.consecutiveDoNothingCount) + '\n' + '            |Players count: ' + wormsMap.players.size + '\n' + '            |Worms per player: ' + first(wormsMap.players).worms.size + '\n' + '            |Pushback damage: ' + wormGameDetails.pushbackDamage + '\n' + '            |Lava damage: ' + wormGameDetails.lavaDamage + '\n' + '            ');
     var tmp$;
     var accumulator = '';
     tmp$ = ensureNotNull(wormGameDetails.myPlayer).worms.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      accumulator = accumulator + trimMargin('\n' + '                        ' + this.getBaseWormText_0(element) + '\n' + '                        ' + this.getWormWeaponDetails_0(element) + '\n' + '                        ' + this.getWormBananasDetails_0(element) + '\n' + '                        ');
+      accumulator = accumulator + trimMargin('\n' + '                        ' + this.getBaseWormText_0(element) + '\n' + '                        ' + this.getWormWeaponDetails_0(element) + '\n' + '                        ' + this.getWormBananasDetails_0(element) + '\n' + '                        ' + this.getWormSnowballsDetails_0(element) + '\n' + '                        ');
     }
     var myPlayerWorms = accumulator;
     var myPlayer = trimMargin('\n' + '            |@02 My Player' + '\n' + '            ' + this.getBasePlayerText_0(wormGameDetails.myPlayer) + '\n' + '            |Health: ' + toString(wormGameDetails.myPlayer.health) + '\n' + '            |Current Worm: ' + wormGameDetails.myPlayer.currentWormId + '\n' + '            |Worms: ' + myPlayerWorms + '\n' + '            ');
@@ -3551,7 +4096,7 @@
     }
     var opponentPlayers = accumulator_0;
     var specialItems = trimMargin('\n' + '            |@04 Special Items' + '\n' + '            |HEALTH_PACK: ' + HealthPack$Companion_getInstance().build_8h9dqi$(this.config_0).value + '\n' + '            ');
-    var legend = trimMargin('\n' + '            |@05 Legend' + '\n' + '            |DEEP_SPACE: ' + CellType$DEEP_SPACE_getInstance().printable + ' ASCII:219' + '\n' + '            |DIRT: ' + CellType$DIRT_getInstance().printable + ' ASCII:178' + '\n' + '            |AIR: ' + CellType$AIR_getInstance().printable + ' ASCII:176' + '\n' + '            |HEALTH_PACK: ' + HealthPack$Companion_getInstance().PRINTABLE + ' ASCII:204, 185' + '\n' + '            |WORM_MARKER: 13 Example for:Player1, Worm3' + '\n' + '            ');
+    var legend = trimMargin('\n' + '            |@05 Legend' + '\n' + '            |DEEP_SPACE: ' + CellType$DEEP_SPACE_getInstance().printable + ' ASCII:219' + '\n' + '            |DIRT: ' + CellType$DIRT_getInstance().printable + ' ASCII:178' + '\n' + '            |AIR: ' + CellType$AIR_getInstance().printable + ' ASCII:176' + '\n' + '            |LAVA: ' + CellType$LAVA_getInstance().printable + '\n' + '            |HEALTH_PACK: ' + HealthPack$Companion_getInstance().PRINTABLE + ' ASCII:204, 185' + '\n' + '            |WORM_MARKER: 13 Example for:Player1, Worm3' + '\n' + '            ');
     var map = trimMargin('\n' + '            |@06 World Map' + '\n' + '            |' + PrintableMapCell$Companion_getInstance().getStringMap_n0bbco$(wormGameDetails.map) + '\n' + '            ');
     return trimMargin('\n' + '            |' + this.addLinesCount_0(matchDetails) + '\n' + '            |' + '\n' + '            |' + this.addLinesCount_0(myPlayer) + '\n' + '            |' + '\n' + '            |' + this.addLinesCount_0(opponentPlayers) + '\n' + '            |' + this.addLinesCount_0(specialItems) + '\n' + '            |' + '\n' + '            |' + this.addLinesCount_0(legend) + '\n' + '            |' + '\n' + '            |' + this.addLinesCount_0(map) + '\n' + '            ');
   };
@@ -3563,17 +4108,21 @@
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     return '|Banana bomb damage: ' + toString((tmp$ = worm.bananaBombs) != null ? tmp$.damage : null) + '\n' + '                            |Banana bomb range: ' + toString((tmp$_0 = worm.bananaBombs) != null ? tmp$_0.range : null) + '\n' + '                            |Banana bombs count: ' + toString((tmp$_1 = worm.bananaBombs) != null ? tmp$_1.count : null) + '\n' + '                            |Banana bomb damage radius: ' + toString((tmp$_2 = worm.bananaBombs) != null ? tmp$_2.damageRadius : null);
   };
+  WormsRendererText.prototype.getWormSnowballsDetails_0 = function (worm) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    return '|Snowballs freeze duration: ' + toString((tmp$ = worm.snowballs) != null ? tmp$.freezeDuration : null) + '\n' + '                |Snowballs range: ' + toString((tmp$_0 = worm.snowballs) != null ? tmp$_0.range : null) + '\n' + '                |Snowballs count: ' + toString((tmp$_1 = worm.snowballs) != null ? tmp$_1.count : null) + '\n' + '                |Snowballs freeze radius: ' + toString((tmp$_2 = worm.snowballs) != null ? tmp$_2.freezeRadius : null);
+  };
   WormsRendererText.prototype.addLinesCount_0 = function (section) {
     var lines = toMutableList(split(section, [WormsRenderer$Companion_getInstance().EOL]));
     lines.add_wxm5ur$(1, 'Section lines count: ' + (lines.size + 1 | 0));
     return joinToString(lines, WormsRenderer$Companion_getInstance().EOL);
   };
   WormsRendererText.prototype.getBasePlayerText_0 = function (player) {
-    return '|Player id: ' + player.id + '\n' + '                  |Score: ' + player.score + '\n' + '                  |Selection Tokens: ' + player.remainingWormSelections;
+    return '|Player id: ' + toString(player != null ? player.id : null) + '\n' + '                  |Score: ' + toString(player != null ? player.score : null) + '\n' + '                  |Selection Tokens: ' + toString(player != null ? player.remainingWormSelections : null) + '\n' + '                  |Previous Command: ' + toString(player != null ? player.previousCommand : null);
   };
   WormsRendererText.prototype.getBaseWormText_0 = function (worm) {
     var tmp$, tmp$_0;
-    return '|' + WormsRenderer$Companion_getInstance().EOL + '\n' + '                  |Worm id: ' + worm.id + '\n' + '                  |Health: ' + toString(worm.health) + '\n' + '                  |Position x: ' + toString((tmp$ = worm.position) != null ? tmp$.x : null) + '\n' + '                  |Position y: ' + toString((tmp$_0 = worm.position) != null ? tmp$_0.y : null) + '\n' + '                  |Digging range: ' + toString(worm.diggingRange) + '\n' + '                  |Movement range: ' + toString(worm.movementRange) + '\n' + '                  |Profession: ' + toString(worm.profession);
+    return '|' + WormsRenderer$Companion_getInstance().EOL + '\n' + '                  |Worm id: ' + worm.id + '\n' + '                  |Health: ' + toString(worm.health) + '\n' + '                  |Position x: ' + toString((tmp$ = worm.position) != null ? tmp$.x : null) + '\n' + '                  |Position y: ' + toString((tmp$_0 = worm.position) != null ? tmp$_0.y : null) + '\n' + '                  |Digging range: ' + toString(worm.diggingRange) + '\n' + '                  |Movement range: ' + toString(worm.movementRange) + '\n' + '                  |Rounds until unfrozen: ' + toString(worm.roundsUntilUnfrozen) + '\n' + '                  |Profession: ' + toString(worm.profession);
   };
   WormsRendererText.$metadata$ = {
     kind: Kind_CLASS,
@@ -3799,7 +4348,7 @@
   }
   GameRunner.prototype.getGeneratedMap = function () {
     var $receiver = new IntRange(1, this.playerCount);
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var destination = ArrayList_init_0(collectionSizeOrDefault($receiver, 10));
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -3822,7 +4371,7 @@
       var tmp$_0;
       var value = destination.get_11rb$(key);
       if (value == null) {
-        var answer = ArrayList_init_0();
+        var answer = ArrayList_init();
         destination.put_xwzc9p$(key, answer);
         tmp$_0 = answer;
       }
@@ -3840,7 +4389,7 @@
       var tmp$_2 = destination_0.put_xwzc9p$;
       var tmp$_3 = element_0.key;
       var values = element_0.value;
-      var destination_1 = ArrayList_init(collectionSizeOrDefault(values, 10));
+      var destination_1 = ArrayList_init_0(collectionSizeOrDefault(values, 10));
       var tmp$_4;
       tmp$_4 = values.iterator();
       while (tmp$_4.hasNext()) {
@@ -3902,6 +4451,9 @@
   Object.defineProperty(CommandStrings, 'BANANA', {
     get: CommandStrings$BANANA_getInstance
   });
+  Object.defineProperty(CommandStrings, 'SNOWBALL', {
+    get: CommandStrings$SNOWBALL_getInstance
+  });
   Object.defineProperty(CommandStrings, 'SELECT', {
     get: CommandStrings$SELECT_getInstance
   });
@@ -3941,6 +4493,17 @@
     get: ShootResult$OUT_OF_RANGE_getInstance
   });
   package$feedback.ShootResult = ShootResult;
+  package$feedback.SnowballCommandFeedback = SnowballCommandFeedback;
+  Object.defineProperty(SnowballResult, 'BULLSEYE', {
+    get: SnowballResult$BULLSEYE_getInstance
+  });
+  Object.defineProperty(SnowballResult, 'TERRAIN', {
+    get: SnowballResult$TERRAIN_getInstance
+  });
+  Object.defineProperty(SnowballResult, 'DEEP_SPACE', {
+    get: SnowballResult$DEEP_SPACE_getInstance
+  });
+  package$feedback.SnowballResult = SnowballResult;
   package$feedback.TeleportCommandFeedback = TeleportCommandFeedback;
   Object.defineProperty(TeleportResult, 'MOVED', {
     get: TeleportResult$MOVED_getInstance
@@ -3991,6 +4554,7 @@
     get: ShootCommand$Companion_getInstance
   });
   package$implementation.ShootCommand = ShootCommand;
+  package$implementation.SnowballCommand = SnowballCommand;
   package$implementation.TeleportCommand_init_lppp6n$ = TeleportCommand_init;
   package$implementation.TeleportCommand = TeleportCommand;
   package$command.WormsCommand = WormsCommand;
@@ -4015,6 +4579,9 @@
   Object.defineProperty(CellType, 'DEEP_SPACE', {
     get: CellType$DEEP_SPACE_getInstance
   });
+  Object.defineProperty(CellType, 'LAVA', {
+    get: CellType$LAVA_getInstance
+  });
   var package$map = package$engine.map || (package$engine.map = {});
   package$map.CellType = CellType;
   package$map.ImageProcessingInfo = ImageProcessingInfo;
@@ -4023,6 +4590,9 @@
   });
   package$map.MapCell_init_tsn25k$ = MapCell_init;
   package$map.MapCell = MapCell;
+  Object.defineProperty(Point, 'Companion', {
+    get: Point$Companion_getInstance
+  });
   package$map.Point = Point;
   package$map.GameMap = GameMap;
   package$map.WormsMap = WormsMap;
@@ -4041,12 +4611,20 @@
   Object.defineProperty(package$player, 'CommandoWorm', {
     get: CommandoWorm_getInstance
   });
+  Object.defineProperty(Snowballs, 'Companion', {
+    get: Snowballs$Companion_getInstance
+  });
+  package$player.Snowballs = Snowballs;
+  Object.defineProperty(package$player, 'TechnologistWorm', {
+    get: TechnologistWorm_getInstance
+  });
   Object.defineProperty(Weapon, 'Companion', {
     get: Weapon$Companion_getInstance
   });
   package$player.Weapon = Weapon;
-  package$player.Worm_init_oh7tet$ = Worm_init;
+  package$player.Worm_init_g1yrkq$ = Worm_init;
   package$player.Worm = Worm;
+  package$player.WormBuilder = WormBuilder;
   Object.defineProperty(WormsPlayer, 'Companion', {
     get: WormsPlayer$Companion_getInstance
   });

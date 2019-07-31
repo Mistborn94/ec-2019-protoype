@@ -3,6 +3,7 @@ export enum CommandStringsEnum {
   DIG = 'dig',
   SHOOT = 'shoot',
   BANANA = 'banana',
+  SNOWBALL = 'snowball',
   SELECT = 'select',
   NOTHING = 'nothing'
 }
@@ -42,6 +43,7 @@ export interface MapCell extends Position {
   isAllyWormCell: boolean;
   isInDigMoveRange: boolean;
   isInBananaRange: boolean;
+  isInSnowballRange: boolean;
   styleNumber: number;
   event: VisualizerEvent;
 }
@@ -76,15 +78,24 @@ interface Bananas {
   damageRadius: number;
 }
 
+interface Snowballs {
+  freezeDuration: number;
+  range: number;
+  count: number;
+  freezeRadius: number;
+}
+
 export interface Worm {
   id: number;
   diggingRange: number;
   health: number;
   movementRange: number;
+  roundsUntilUnfrozen: number;
   roundHit: number;
   roundMoved: number;
   weapon: Weapon;
   bananas?: Bananas;
+  snowballs?: Snowballs;
   dead: boolean;
   player: WormsPlayer;
   position: Position;
@@ -124,6 +135,7 @@ export enum ActionsEnum {
   DIG = 'dig',
   SHOOT = 'shoot',
   BANANA = 'banana',
+  SNOWBALL = 'snowball',
 }
 
 export interface WormsPlayer {
@@ -146,6 +158,7 @@ interface MapStyle {
   cellSize: number;
   powerupSize: number;
   bananaBombScale: number;
+  snowballScale: number;
 }
 
 export interface GameMap {
@@ -186,6 +199,7 @@ export interface GameRunner {
 }
 
 export interface GameConfig {
+  technologistWorms: any;
   agentWorms: any;
   commandoWorms: any;
   csvSeparator: string;
