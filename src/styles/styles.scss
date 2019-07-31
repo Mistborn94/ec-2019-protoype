@@ -23,17 +23,59 @@ $accent: $mat-cyan;
 $warn: $mat-orange;
 $danger: $mat-red;
 
+@import 'variables';
+
 @font-face {
   font-family: 'Heroes-Legend';
-  src: url('assets/visualizer-assets/HeroesLegend.ttf') format('truetype');
+  src: url('../assets/visualizer-assets/HeroesLegend.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Arial-Rounded';
-  src: url('assets/visualizer-assets/arial-rounded.ttf') format('truetype');
+  src: url('../assets/visualizer-assets/arial-rounded.ttf') format('truetype');
 }
 
 html,
 body {
   margin: 0;
+}
+
+.body {
+  padding-top: 80px;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  padding: 16px;
+  margin: 0 auto;
+  position: relative;
+
+  @media (min-width: $screen-lg-min) {
+    width: $screen-lg-min - 128;
+  }
+
+  @media (min-width: $screen-md-min) and (max-width: $screen-md-max) {
+    width: $screen-md-min - 64;
+  }
+
+  @media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+    width: $screen-sm-min - 32;
+  }
+
+  &.no-padding-top {
+    padding-top: 0px;
+  }
+
+  &.no-padding-bottom {
+    padding-bottom: 0px;
+  }
+
+  &.no-padding-left {
+    padding-left: 0px;
+  }
+
+  &.no-padding-right {
+    padding-right: 0px;
+  }
 }

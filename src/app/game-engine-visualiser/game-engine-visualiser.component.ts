@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { EndGameDialogComponent } from 'src/app/game-engine-visualiser/end-game-dialog/end-game-dialog.component';
+import { EndGameDialogComponent } from './end-game-dialog/end-game-dialog.component';
 import {
   ActionsEnum,
   CommandStringsEnum,
@@ -160,12 +160,11 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   private getArrayRange(count: number = 1) {
-    return [...Array(count)
-      .keys()];
+    return Array.from({length: count}, (v, k) => k + 1);
   }
 
   private getMapStyle(map: GameMap, config: GameConfig): GameMap {
-    let cellSize = 900 / map.size;
+    let cellSize = 600 / map.size;
     map.mapStyle = {
       gridStyle: this.getArrayRange(map.size).map(_ => `${cellSize}px`).join(' '),
       cellSize,

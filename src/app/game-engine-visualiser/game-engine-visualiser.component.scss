@@ -1,4 +1,21 @@
 @import '_font-panel-styles';
+@import 'styles/variables';
+
+.demo-main-container {
+  .container {
+    background: $black-transparent;
+    color: white;
+    display: grid;
+    grid-template-rows: max-content;
+    grid-template-columns: auto auto;
+    // @formatter:off
+    grid-template-areas:
+      'tut tut'
+      '. .';
+    // @formatter:on
+    grid-gap: 16px;
+  }
+}
 
 $move-animations-delay: 500ms;
 $banana-throw-air-time: 750ms;
@@ -16,30 +33,11 @@ $banana-throw-air-time: 750ms;
     filter: blur(6px) brightness(0.3);
     background-size: cover;
     background-repeat: no-repeat;
-
-    background-image: url('../../assets/visualizer-assets/background-2.jpg');
-    //animation: animateChangeBackground 270s infinite alternate;
-  }
-}
-
-@keyframes animateChangeBackground {
-  0% {
-    background-image: url('../../assets/visualizer-assets/background-1.jpg');
-  }
-  50% {
-    background-image: url('../../assets/visualizer-assets/background-2.jpg');
-  }
-  100% {
-    background-image: url('../../assets/visualizer-assets/background-3.jpg');
   }
 }
 
 .screen-container {
   padding: 16px;
-
-  display: grid;
-  grid-template-columns: max-content auto;
-  grid-gap: 16px;
 
   overflow: hidden;
 }
@@ -53,11 +51,11 @@ $banana-throw-air-time: 750ms;
 }
 
 .dashboard-container {
-  display: grid;
-  grid-template-rows: max-content max-content max-content auto;
-  grid-gap: 32px;
-
   @extend ._blue-panel;
+
+  &.tut {
+    grid-area: tut;
+  }
 
   .dashboard-details {
     @extend .blue-font;
@@ -65,14 +63,15 @@ $banana-throw-air-time: 750ms;
 
     display: grid;
     grid-gap: 4px 8px;
-    grid-template-columns: max-content 40px max-content 60px max-content;
-    grid-template-rows: repeat(3, max-content);
+    grid-template-columns: max-content 40px max-content 60px;
+    grid-template-rows: repeat(4, max-content);
     // @formatter:off
     grid-template-areas:
-  'player  player    player   player    portraits'
-  'worms   worms-v   score    score-v   portraits'
-  'selects selects-v bananas  bananas-v portraits'
-  'errors  errors-v  errors-v errors-v  portraits';
+  'player    player    player    player   '
+  'worms     worms-v   score     score-v  '
+  'selects   selects-v bananas   bananas-v'
+  'portraits portraits portraits portraits'
+  'errors    errors-v  errors-v  errors-v ';
     // @formatter:on
     @include generate-grid-areas(player, portraits, worms, worms-v, score, score-v, selects, selects-v, bananas, bananas-v, errors);
 
@@ -117,8 +116,13 @@ $banana-throw-air-time: 750ms;
   }
 
   .cheats {
+    grid-area: cheats;
     @extend .blue-font;
     @extend .subtitle;
+
+    h1 {
+      text-align: center;
+    }
 
     .tutorial-container {
       display: grid;
@@ -414,8 +418,9 @@ $versions-count: 3;
 }
 
 .challenge-logo {
+  grid-area: logo;
   height: 200px;
-  margin: -50px 0 -50px auto;
+  margin: auto;
 }
 
 .map-view {
