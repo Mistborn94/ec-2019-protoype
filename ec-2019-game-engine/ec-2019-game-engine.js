@@ -2013,6 +2013,9 @@
     var tmp$;
     return (tmp$ = this.allFeedback_0.get_11rb$(round)) != null ? tmp$ : emptyList();
   };
+  WormsMap.prototype.getAllFeedback = function () {
+    return this.allFeedback_0;
+  };
   WormsMap.prototype.removeDeadWorms = function () {
     var $receiver = this.players;
     var destination = ArrayList_init();
@@ -4412,6 +4415,20 @@
   };
   GameRunner.prototype.getFeedback = function (wormsMap) {
     return wormsMap.getFeedback_za3lpa$(wormsMap.currentRound);
+  };
+  GameRunner.prototype.getAllFeedback = function (wormsMap) {
+    var $receiver = wormsMap.getAllFeedback();
+    var destination = ArrayList_init_0($receiver.size);
+    var tmp$;
+    tmp$ = $receiver.entries.iterator();
+    while (tmp$.hasNext()) {
+      var item = tmp$.next();
+      destination.add_11rb$(item.value);
+    }
+    return destination;
+  };
+  GameRunner.prototype.setCurrentRound = function (wormsMap, newValue) {
+    wormsMap.currentRound = newValue;
   };
   GameRunner.$metadata$ = {
     kind: Kind_CLASS,

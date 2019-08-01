@@ -10,7 +10,7 @@
     grid-template-columns: auto auto;
     // @formatter:off
     grid-template-areas:
-      'tut tut'
+      'tutorial tutorial'
       '. .';
     // @formatter:on
     grid-gap: 16px;
@@ -53,11 +53,13 @@ $banana-throw-air-time: 750ms;
 .dashboard-container {
   @extend ._blue-panel;
 
-  &.tut {
-    grid-area: tut;
+  &.tutorial {
+    grid-area: tutorial;
   }
 
   .dashboard-details {
+    padding: 8px 0;
+
     @extend .blue-font;
     @extend .subtitle;
 
@@ -67,13 +69,18 @@ $banana-throw-air-time: 750ms;
     grid-template-rows: repeat(4, max-content);
     // @formatter:off
     grid-template-areas:
-  'player    player    player    player   '
-  'worms     worms-v   score     score-v  '
-  'selects   selects-v bananas   bananas-v'
-  'portraits portraits portraits portraits'
-  'errors    errors-v  errors-v  errors-v ';
+  'player    player    score     score-v    '
+  'worms     worms-v   bananas   bananas-v  '
+  'selects   selects-v snowballs snowballs-v'
+  'portraits portraits portraits portraits  '
+  'errors    errors-v  errors-v  errors-v   ';
     // @formatter:on
-    @include generate-grid-areas(player, portraits, worms, worms-v, score, score-v, selects, selects-v, bananas, bananas-v, errors);
+    @include generate-grid-areas(player, portraits, worms, worms-v, score, score-v, selects, selects-v,
+      bananas, bananas-v, snowballs, snowballs-v, errors);
+
+    .score, .score-v {
+      align-self: end;
+    }
 
     .player {
       font-size: 22px;

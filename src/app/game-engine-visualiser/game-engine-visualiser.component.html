@@ -5,7 +5,7 @@
 <!--                      [thumb]="'/assets/images/thumbs/groups-background.primitive.svg'"></progressive-loader>-->
   <div class="container">
 
-    <div class="dashboard-container tut">
+    <div class="dashboard-container tutorial">
       <div class="cheats">
         <!--      Cheats-->
         <!--            <button mat-flat-button (click)="cheatKillPlayer2()">All your base are belong to us</button>-->
@@ -44,6 +44,8 @@
       <div class="selects-v orange-font">{{details.wormSelectionTokens}}</div>
       <div class="bananas">Bananas</div>
       <div class="bananas-v orange-font">{{details.bananasCount}}</div>
+      <div class="snowballs">Snowballs</div>
+      <div class="snowballs-v orange-font">{{details.snowballsCount}}</div>
       <div *ngIf="details.roundErrors.length"
            class="errors">Errors</div>
       <div *ngIf="details.roundErrors.length"

@@ -110,33 +110,6 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   private fixJsEngineIssues() {
-    // let wormToEdit = this.gameMap.players.toArray()[0].worms.toArray()[1];
-    // wormToEdit.position.x++;
-    // let playerPropertyKey = Object.keys(wormToEdit).find(key => key.includes('player_'));
-    // wormToEdit[playerPropertyKey] = null;
-
-    // this.flatCells.find(c => c.occupier == wormToEdit).occupier = null;
-    // this.flatCells.find(c => this.isSamePosition(c, wormToEdit.position)).occupier = wormToEdit;
-    //
-    // [0, 1, 2].forEach(y => {
-    //   let lCell = this.flatCells.find(c => this.isSamePosition(c, {x: 3, y: y}));
-    //   let rCell = this.flatCells.find(c => this.isSamePosition(c, {x: 6, y: y}));
-    //   let lCellClone = this.clone(lCell);
-    //   lCell.type = this.clone(rCell.type);
-    //   rCell.type = lCellClone.type;
-    // });
-
-    let halfSize = Math.round((this.gameMap.size - 1) / 2);
-    let centerCell = this.flatCells.find(c => this.isSamePosition(c, {x: halfSize, y: halfSize}));
-    let airType = this.flatCells.find(c => c.type.name$ == 'AIR').type;
-    this.flatCells.filter(c => c.powerup)
-      .forEach(powerCell => {
-        let newPowerUpCell = this.getRandomFromArray(this.getNearCells(centerCell).filter(c => !c.powerup && c));
-        newPowerUpCell.powerup = powerCell.powerup;
-        newPowerUpCell.type = airType;
-
-        powerCell.powerup = null;
-      });
   }
 
   private getLivingWorms(): Worm[] {
@@ -155,11 +128,15 @@ export class GameEngineVisualiserComponent implements OnDestroy {
             .map(w => w.bananas ? w.bananas.count : null)
             .filter(count => count !== null)[0]
           || 0,
+        snowballsCount: p.livingWorms.toArray()
+            .map(w => w.snowballs ? w.snowballs.count : null)
+            .filter(count => count !== null)[0]
+          || 0,
         activeWormImage: `${p.id}${p.currentWorm.id}`,
         roundErrors: this.gameRunner.getErrorList(this.gameMap, p),
         worms: p.worms.toArray(),
       })),
-      currentRound: this.currentRoundTracker,
+      currentRound: this.gameMap.currentRound,
     };
   }
 
@@ -208,7 +185,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     }
 
     this.currentRoundTracker++;
-    this.gameMap.currentRound = this.currentRoundTracker;
+    this.gameRunner.setCurrentRound(this.gameMap, this.currentRoundTracker);
+
     this.doBotAction();
     this.refreshMap();
   }
@@ -249,14 +227,13 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
     this.worms = this.getLivingWorms();
 
-    let state = JSON.parse(this.gameRunner.renderJson(this.gameMap, null));
-    let events: VisualizerEvent[] = state.visualizerEvents;
+    let allFeedback = this.gameRunner.getAllFeedback(this.gameMap).toArray();
+    let events: VisualizerEvent[] = (allFeedback.length ? allFeedback[allFeedback.length - 1].toArray() : [])
+      .map(e => this.getValueFromKey(e, 'visualizerEvent_'));
+
+    // let state = JSON.parse(this.gameRunner.renderJson(this.gameMap, null));
+    // let events: VisualizerEvent[] = state.visualizerEvents;
     if (events.length > 0) {
-      let lastRoundEventsLength = this.lastEventIndex;
-      this.lastEventIndex = events.length;
-      events = events.slice(lastRoundEventsLength);
-
-
       this.shootEvents = events.filter(e => e.type == CommandStringsEnum.SHOOT)
         .map(e => {
           let end = e.positionEnd;
@@ -297,6 +274,10 @@ export class GameEngineVisualiserComponent implements OnDestroy {
           return e;
         });
     }
+  }
+
+  private getValueFromKey(element, property) {
+    return element[Object.keys(element).find(key => key.includes(property))];
   }
 
   private isSamePosition(a: Position, b: Position) {
@@ -361,7 +342,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
           message: this.gameMap.winningPlayer == this.player1
             ? 'You won! 🏆'
             : 'Game Over 🥺',
-          gameMape: this.gameMap,
+          gameMap: this.gameMap,
         },
       })
         .afterClosed()
