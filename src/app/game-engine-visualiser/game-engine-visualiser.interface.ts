@@ -31,6 +31,7 @@ interface DashboardPlayerDetails {
   totalScore: number;
   wormSelectionTokens: number;
   bananasCount: number;
+  snowballsCount: number;
   activeWormImage: string;
   roundErrors: any;
   worms: Worm[];
@@ -196,6 +197,10 @@ export interface GameRunner {
   getErrorList(wormsMap, wormsPlayer): any[];
 
   getAllErrorList(wormsMap): GameMap;
+
+  getAllFeedback(wormsMap): KotlinList<KotlinList<any>>;
+
+  setCurrentRound(gameMap: GameMap, newValue: number): void;
 }
 
 export interface GameConfig {
