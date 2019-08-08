@@ -1,5 +1,5 @@
-@import '_font-panel-styles';
-@import 'styles/variables';
+@import 'font-panel-styles';
+@import '../../../styles/variables';
 
 .demo-main-container {
   .container {
@@ -364,25 +364,25 @@ $banana-throw-air-time: 750ms;
 
 //SurfaceTypeEnum
 .DEEP_SPACE {
-  background-image: url('../../assets/visualizer-assets/texture_space.png');
+  background-image: url('../../../assets/visualizer-assets/texture_space.png');
   background-size: cover;
   background-color: #050405;
 }
 
 .DIRT {
-  background-image: url('../../assets/visualizer-assets/texture_asteroid.png');
+  background-image: url('../../../assets/visualizer-assets/texture_asteroid.png');
   background-size: cover;
   background-color: #919191;
 }
 
 .AIR {
-  background-image: url('../../assets/visualizer-assets/texture_rock.png');
+  background-image: url('../../../assets/visualizer-assets/texture_rock.png');
   background-size: cover;
   background-color: #2f2f2f;
 }
 
 .LAVA {
-  background-image: url('../../assets/visualizer-assets/texture_lava.png');
+  background-image: url('../../../assets/visualizer-assets/texture_lava.png');
   background-size: cover;
   background-color: #2f2f2f;
 }

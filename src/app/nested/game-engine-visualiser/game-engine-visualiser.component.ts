@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommandPair } from './command-pair';
-import * as bot from './bot';
+import * as bot from './bot/index';
 
 @Component({
   selector: 'app-game-engine-visualiser',
