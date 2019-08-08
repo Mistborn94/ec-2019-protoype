@@ -95,7 +95,7 @@ export interface Worm {
   roundHit: number;
   roundMoved: number;
   weapon: Weapon;
-  bananas?: Bananas;
+  bananaBombs?: Bananas;
   snowballs?: Snowballs;
   dead: boolean;
   player: WormsPlayer;
@@ -216,5 +216,7 @@ export interface GameConfig {
   scores: any;
   totalHealthPacks: number;
   wormSelectTokens: any;
+
+  websitePixelSize: number;
 }
 

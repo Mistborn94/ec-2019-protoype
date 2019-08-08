@@ -127,8 +127,7 @@ $banana-throw-air-time: 750ms;
     }
   }
 
-  .cheats {
-    grid-area: cheats;
+  .explained {
     @extend .blue-font;
     @extend .subtitle;
 
@@ -465,4 +464,23 @@ $versions-count: 3;
 
 .map-view {
   justify-self: right;
+}
+
+.upload-link {
+  place-self: center end;
+  transition: 300ms ease-in-out;
+
+  &:hover {
+    filter: brightness(1.2) drop-shadow(0px 0px 6px skyblue);
+    cursor: pointer;
+  }
+}
+
+.slider {
+  width: 95%;
+}
+
+.bi-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
