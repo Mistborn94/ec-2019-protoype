@@ -476,11 +476,31 @@ $versions-count: 3;
   }
 }
 
-.slider {
-  width: 95%;
-}
-
 .bi-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+.explosion-see-through {
+  opacity: 0.75;
+}
+
+.round-slider-container {
+  display: grid;
+  grid-template-columns: max-content auto max-content;
+
+  align-items: center;
+  grid-gap: 8px;
+
+  @extend .orange-font;
+  @extend .subtitle;
+}
+
+.buttons-container {
+  display:grid;
+  grid-template-columns: max-content max-content auto;
+
+  :nth-child(3) {
+    justify-self: end;
+  }
 }

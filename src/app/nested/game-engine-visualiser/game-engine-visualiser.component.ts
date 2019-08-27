@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from './end-game-dialog/end-game-dialog.component';
 import {
@@ -17,10 +17,11 @@ import {
 } from './game-engine-visualiser.interface';
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { interval, Observable, Subject } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 import { CommandPair } from './command-pair';
 import * as bot from './bot/index';
+import { MatSlider } from '@angular/material/slider';
 
 function getArrayRange(count: number = 1) {
   return Array.from({length: count}, (v, k) => k + 1);
@@ -56,12 +57,10 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   private player2: WormsPlayer;
   worms: Worm[];
   actionsEnum = ActionsEnum;
-  commandStringsEnum = CommandStringsEnum;
   zIndexLevelsEnum = ZIndexLevelsEnum;
   shootEvents: VisualizerEvent[];
   bananaEvents: VisualizerEvent[];
   snowballEvents: VisualizerEvent[];
-  lastEventIndex = 0;
   dashboard: Dashboard;
 
   isPaused: boolean;
@@ -69,18 +68,26 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   gameMap: GameMap;
 
   flatCells: MapCell[];
-  selectedRound: number;
+  private selectedRound: number;
   private commandsCollector$ = new Subject<CommandPair>();
   private unsubscribe$ = new Subject<void>();
   private currentRoundTracker: number;
 
+  private replayPause$ = new Subject<void>();
+  maxRoundNumber: number = 400;
+  private allRounds: StateFile[];
+
+  @ViewChild('slider') slider: MatSlider;
+
   constructor(private dialog: MatDialog,
-              private http: HttpClient) {
+              private http: HttpClient,
+              private ngZone: NgZone) {
     this.initializeNewGame();
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.replayPause$.next();
   }
 
   private initializeNewGame() {
@@ -171,7 +178,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     return map;
   }
 
-  doBotAction() {
+  private doBotAction() {
     let stateJson = this.gameRunner.renderJson(this.gameMap, this.player2);
     let state = JSON.parse(stateJson);
     // JS engine doesn't render json state correctly
@@ -389,6 +396,10 @@ export class GameEngineVisualiserComponent implements OnDestroy {
   }
 
   handleFileInput(files: FileList) {
+    if (!Array.from(files).some(f => f.name === 'GlobalState.json')) {
+      throw 'Could not find any GlobalState.json files. Try match-logs from a new starter-pack release 2019.3.1';
+    }
+
     let stateFiles = <{ round: number, stateFile: File | any }[]>
       Array.from(files).filter(f => f.name === 'GlobalState.json')
         .map(f => {
@@ -401,21 +412,26 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         })
         .sort((a, b) => a.round - b.round);
 
-    let allRounds = [];
+    this.allRounds = [];
 
     let fileReadPromises = stateFiles.map(f =>
       f.stateFile.text().then(result => {
         let resultParsed = JSON.parse(result);
-        allRounds[resultParsed.currentRound] = resultParsed;
+        this.allRounds[resultParsed.currentRound] = resultParsed;
       }));
 
-    Promise.all(fileReadPromises).then(() => this.startMatchLog(allRounds));
+    Promise.all(fileReadPromises).then(() => this.startMatchLog());
   }
 
-  private startMatchLog(stateDictionary: StateFile[]) {
+  private startMatchLog() {
     this.selectedRound = 1;
+    this.maxRoundNumber = Object.keys(this.allRounds).length;
 
-    let currentState = stateDictionary[this.selectedRound];
+    this.startPlayback();
+  }
+
+  private startPlayback() {
+    let currentState = this.allRounds[this.selectedRound];
 
     this.worms = flatMap(
       currentState.opponents.map(o => o.worms
@@ -426,14 +442,23 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
     this.gameMap = <GameMap>{size: currentState.mapSize};
     this.gameMap = this.getMapStyle(this.gameMap, <GameConfig>{
-      websitePixelSize: 700,
+      websitePixelSize: 650,
       agentWorms: {bananas: {damageRadius: 5}},
       technologistWorms: {snowballs: {freezeRadius: 5}},
     });
 
-
-    setInterval(() => this.updateToNextRound(stateDictionary[this.selectedRound++]), 500);
-
+    interval(1500)
+      .pipe(takeUntil(this.replayPause$))
+      .subscribe(() => {
+        let stateFile = this.allRounds[this.selectedRound++];
+        if (stateFile) {
+          this.ngZone.runOutsideAngular(() => {
+            this.updateToNextRound(stateFile);
+          });
+        } else {
+          this.replayPause$.next();
+        }
+      });
   }
 
   private updateToNextRound(currentState) {
@@ -452,7 +477,6 @@ export class GameEngineVisualiserComponent implements OnDestroy {
       gw.position = matchingWorm.position;
       gw.roundsUntilUnfrozen = matchingWorm.roundsUntilUnfrozen;
       gw.snowballs = matchingWorm.snowballs;
-
     });
     this.worms = this.worms.filter(w => w.health > 0);
 
@@ -500,6 +524,35 @@ export class GameEngineVisualiserComponent implements OnDestroy {
           return e;
         });
     }
+
+    this.dashboard = {
+      players: [currentState.opponents[0], currentState.opponents[1]].map(p => {
+        const livingWorms = p.worms.filter(w => w.health > 0);
+        return {
+          playerId: p.id,
+          health: p.health,
+          livingWormsCount: livingWorms.length,
+          totalScore: p.score,
+          wormSelectionTokens: p.remainingWormSelections,
+          bananasCount: livingWorms
+              .map(w => w.bananaBombs ? w.bananaBombs.count : null)
+              .filter(count => count !== null)[0]
+            || 0,
+          snowballsCount: livingWorms
+              .map(w => w.snowballs ? w.snowballs.count : null)
+              .filter(count => count !== null)[0]
+            || 0,
+          activeWormImage: `${p.id}${p.currentWormId}`,
+          roundErrors: [],
+          worms: p.worms,
+        };
+      }),
+      currentRound: this.selectedRound,
+    };
+  }
+
+  reloadPage(): void {
+    window.location.reload();
   }
 }
 

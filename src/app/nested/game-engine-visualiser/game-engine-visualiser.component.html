@@ -36,7 +36,7 @@
           <div class="small-icon self-commands"></div>
         </div>
 
-        <h1>Round {{dashboard?.currentRound}} {{selectedRound}}</h1>
+        <h1>Round {{dashboard?.currentRound}}</h1>
       </div>
 
     </div>
@@ -131,7 +131,7 @@
                 <div class="icon">🍌</div>
               </div>
             </div>
-            <div class="explosion overlap"
+            <div class="explosion overlap explosion-see-through"
                  *ngIf="event.result !== 'DEEP_SPACE'"
                  [style.background-image]="'url(\'assets/visualizer-assets/big-explosion.gif'+ '?a=' + event.randomUrl +'\')'"
                  [ngStyle]="{'transform': 'translate('+(event.positionRelative.x)*100+'%,'
@@ -157,7 +157,7 @@
                 <div class="icon">❄</div>
               </div>
             </div>
-            <div class="explosion overlap"
+            <div class="explosion overlap explosion-see-through"
                  *ngIf="event.result !== 'DEEP_SPACE'"
                  [style.background-image]="'url(\'assets/visualizer-assets/frost-explosion.gif'+ '?a=' + event.randomUrl +'\')'"
                  [ngStyle]="{'transform': 'translate('+(event.positionRelative.x)*100+'%,'
@@ -282,14 +282,32 @@
         </div>
       </div>
 
-      <mat-slider class="slider"
-                  [value]="selectedRound"
-                  [min]="1"
-                  [max]="400"
-                  [step]="1"
-                  (input)="selectedRound = $event.value">
-      </mat-slider>
-
+      <div *ngIf="allRounds">
+        <div class="round-slider-container">
+          <div>1</div>
+          <mat-slider class="slider"
+                      #slider
+                      [value]="selectedRound"
+                      [min]="1"
+                      [max]="maxRoundNumber"
+                      [step]="1"
+                      (input)="selectedRound = $event.value; startPlayback();">
+          </mat-slider>
+          <div>{{maxRoundNumber}}</div>
+        </div>
+        <div class="buttons-container">
+          <button mat-button (click)="startPlayback()">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+          <button mat-button (click)="replayPause$.next()">
+            <mat-icon>pause</mat-icon>
+          </button>
+          <button mat-button (click)="reloadPage()">
+            <mat-icon>close</mat-icon>
+            UNLOAD
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
