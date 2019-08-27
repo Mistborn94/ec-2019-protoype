@@ -1,5 +1,5 @@
-@import '_font-panel-styles';
-@import 'styles/variables';
+@import 'font-panel-styles';
+@import '../../../styles/variables';
 
 .demo-main-container {
   .container {
@@ -127,8 +127,7 @@ $banana-throw-air-time: 750ms;
     }
   }
 
-  .cheats {
-    grid-area: cheats;
+  .explained {
     @extend .blue-font;
     @extend .subtitle;
 
@@ -364,25 +363,25 @@ $banana-throw-air-time: 750ms;
 
 //SurfaceTypeEnum
 .DEEP_SPACE {
-  background-image: url('../../assets/visualizer-assets/texture_space.png');
+  background-image: url('../../../assets/visualizer-assets/texture_space.png');
   background-size: cover;
   background-color: #050405;
 }
 
 .DIRT {
-  background-image: url('../../assets/visualizer-assets/texture_asteroid.png');
+  background-image: url('../../../assets/visualizer-assets/texture_asteroid.png');
   background-size: cover;
   background-color: #919191;
 }
 
 .AIR {
-  background-image: url('../../assets/visualizer-assets/texture_rock.png');
+  background-image: url('../../../assets/visualizer-assets/texture_rock.png');
   background-size: cover;
   background-color: #2f2f2f;
 }
 
 .LAVA {
-  background-image: url('../../assets/visualizer-assets/texture_lava.png');
+  background-image: url('../../../assets/visualizer-assets/texture_lava.png');
   background-size: cover;
   background-color: #2f2f2f;
 }
@@ -465,4 +464,43 @@ $versions-count: 3;
 
 .map-view {
   justify-self: right;
+}
+
+.upload-link {
+  place-self: center end;
+  transition: 300ms ease-in-out;
+
+  &:hover {
+    filter: brightness(1.2) drop-shadow(0px 0px 6px skyblue);
+    cursor: pointer;
+  }
+}
+
+.bi-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.explosion-see-through {
+  opacity: 0.75;
+}
+
+.round-slider-container {
+  display: grid;
+  grid-template-columns: max-content auto max-content;
+
+  align-items: center;
+  grid-gap: 8px;
+
+  @extend .orange-font;
+  @extend .subtitle;
+}
+
+.buttons-container {
+  display:grid;
+  grid-template-columns: max-content max-content auto;
+
+  :nth-child(3) {
+    justify-self: end;
+  }
 }

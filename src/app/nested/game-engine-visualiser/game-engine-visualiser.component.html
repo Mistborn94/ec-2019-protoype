@@ -1,16 +1,24 @@
 <div class="demo-main-container">
-<!--  <progressive-loader class="fixed"-->
-<!--                      [hasOverlay]="false"-->
-<!--                      [full]="'/assets/images/full/groups-background.png'"-->
-<!--                      [thumb]="'/assets/images/thumbs/groups-background.primitive.svg'"></progressive-loader>-->
+  <!--  <progressive-loader class="fixed"-->
+  <!--                      [hasOverlay]="false"-->
+  <!--                      [full]="'/assets/images/full/groups-background.png'"-->
+  <!--                      [thumb]="'/assets/images/thumbs/groups-background.primitive.svg'"></progressive-loader>-->
   <div class="container">
 
     <div class="dashboard-container tutorial">
-      <div class="cheats">
-        <!--      Cheats-->
-        <!--            <button mat-flat-button (click)="cheatKillPlayer2()">All your base are belong to us</button>-->
-
-        <div class="orange-font flashing-tutorial">Tutorial</div>
+      <div class="explained">
+        <div class="bi-container">
+          <div class="orange-font flashing-tutorial">Tutorial to Play Demo</div>
+          <div class="overlap-container upload-link">
+            <input class="overlap"
+                   #filesUpload
+                   hidden
+                   type="file" webkitdirectory directory multiple
+                   (change)="handleFileInput($event.target.files)">
+            <span class="overlap blue-font subtitle"
+                  (click)="filesUpload.click()"> or upload match-logs to replay</span>
+          </div>
+        </div>
         <div class="orange-font tutorial-container">
           <div>You are commanding the worm marked with the green box</div>
           <div class="small-icon selector-corners-real"></div>
@@ -34,38 +42,40 @@
     </div>
 
     <div class="dashboard-container">
-    <div *ngFor="let details of dashboard?.players" class="dashboard-details">
-      <div class="player">Player {{details.playerId}}</div>
-      <div class="worms">Worms</div>
-      <div class="worms-v orange-font">{{details.livingWormsCount}}</div>
-      <div class="score">Score</div>
-      <div class="score-v orange-font">{{details.totalScore}}</div>
-      <div class="selects">Selection Tokens</div>
-      <div class="selects-v orange-font">{{details.wormSelectionTokens}}</div>
-      <div class="bananas">Bananas</div>
-      <div class="bananas-v orange-font">{{details.bananasCount}}</div>
-      <div class="snowballs">Snowballs</div>
-      <div class="snowballs-v orange-font">{{details.snowballsCount}}</div>
-      <div *ngIf="details.roundErrors.length"
-           class="errors">Errors</div>
-      <div *ngIf="details.roundErrors.length"
-           class="errors-v orange-font">{{details.roundErrors.length ? details.roundErrors : ''}}</div>
+      <div *ngFor="let details of dashboard?.players" class="dashboard-details">
+        <div class="player">Player {{details.playerId}}</div>
+        <div class="worms">Worms</div>
+        <div class="worms-v orange-font">{{details.livingWormsCount}}</div>
+        <div class="score">Score</div>
+        <div class="score-v orange-font">{{details.totalScore}}</div>
+        <div class="selects">Selection Tokens</div>
+        <div class="selects-v orange-font">{{details.wormSelectionTokens}}</div>
+        <div class="bananas">Bananas</div>
+        <div class="bananas-v orange-font">{{details.bananasCount}}</div>
+        <div class="snowballs">Snowballs</div>
+        <div class="snowballs-v orange-font">{{details.snowballsCount}}</div>
+        <div *ngIf="details.roundErrors.length"
+             class="errors">Errors
+        </div>
+        <div *ngIf="details.roundErrors.length"
+             class="errors-v orange-font">{{details.roundErrors.length ? details.roundErrors : ''}}</div>
 
-      <div class="portraits">
-        <div class="portrait-detail" *ngFor="let worm of details.worms">
-          <img class="image"
-               [class.is-selected-worm]="worm == player1?.currentWorm"
-               [src]="'assets/visualizer-assets/worm' + details.playerId + worm.id+ '.png'"/>
-          <div class="image frost-icon"
-               *ngIf="worm.roundsUntilUnfrozen > 0"
-               [style.font-size.px]="gameMap?.mapStyle.powerupSize">❄</div>
-          <div class="health">Health</div>
-          <div class="health-v orange-font">{{worm.health}}</div>
-          <div class="profession">Type</div>
-          <div class="profession-v orange-font">{{worm.profession}}</div>
+        <div class="portraits">
+          <div class="portrait-detail" *ngFor="let worm of details.worms">
+            <img class="image"
+                 [class.is-selected-worm]="worm == player1?.currentWorm"
+                 [src]="'assets/visualizer-assets/worm' + details.playerId + worm.id+ '.png'"/>
+            <div class="image frost-icon"
+                 *ngIf="worm.roundsUntilUnfrozen > 0"
+                 [style.font-size.px]="gameMap?.mapStyle.powerupSize">❄
+            </div>
+            <div class="health">Health</div>
+            <div class="health-v orange-font">{{worm.health}}</div>
+            <div class="profession">Type</div>
+            <div class="profession-v orange-font">{{worm.profession}}</div>
+          </div>
         </div>
       </div>
-    </div>
     </div>
 
     <div class="screen-container">
@@ -83,7 +93,8 @@
                  [src]="'assets/visualizer-assets/worm' + worm.player.id + worm.id + '.png'"/>
             <div class="overlap frost-icon"
                  *ngIf="worm.roundsUntilUnfrozen > 0"
-                 [style.font-size.px]="gameMap?.mapStyle.powerupSize">❄</div>
+                 [style.font-size.px]="gameMap?.mapStyle.powerupSize">❄
+            </div>
             <ng-container *ngIf="worm === player1.currentWorm">
               <div class="overlap" [style.z-index]="zIndexLevelsEnum.cornerSelector - 1"
                    class="selector-corners-shadow overlap"></div>
@@ -120,7 +131,7 @@
                 <div class="icon">🍌</div>
               </div>
             </div>
-            <div class="explosion overlap"
+            <div class="explosion overlap explosion-see-through"
                  *ngIf="event.result !== 'DEEP_SPACE'"
                  [style.background-image]="'url(\'assets/visualizer-assets/big-explosion.gif'+ '?a=' + event.randomUrl +'\')'"
                  [ngStyle]="{'transform': 'translate('+(event.positionRelative.x)*100+'%,'
@@ -146,7 +157,7 @@
                 <div class="icon">❄</div>
               </div>
             </div>
-            <div class="explosion overlap"
+            <div class="explosion overlap explosion-see-through"
                  *ngIf="event.result !== 'DEEP_SPACE'"
                  [style.background-image]="'url(\'assets/visualizer-assets/frost-explosion.gif'+ '?a=' + event.randomUrl +'\')'"
                  [ngStyle]="{'transform': 'translate('+(event.positionRelative.x)*100+'%,'
@@ -261,13 +272,40 @@
               </div>
 
               <div class="square texture overlap"
-                   [ngClass]="cell.type.name$ + cell.styleNumber"
+                   [ngClass]="['' + cell.type.name$ + cell.styleNumber, '' + cell.type + 1]"
                    [style.z-index]="zIndexLevelsEnum.texture">
               </div>
             </div>
 
           </ng-container>
 
+        </div>
+      </div>
+
+      <div *ngIf="allRounds">
+        <div class="round-slider-container">
+          <div>1</div>
+          <mat-slider class="slider"
+                      #slider
+                      [value]="selectedRound"
+                      [min]="1"
+                      [max]="maxRoundNumber"
+                      [step]="1"
+                      (input)="selectedRound = $event.value; startPlayback();">
+          </mat-slider>
+          <div>{{maxRoundNumber}}</div>
+        </div>
+        <div class="buttons-container">
+          <button mat-button (click)="startPlayback()">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+          <button mat-button (click)="replayPause$.next()">
+            <mat-icon>pause</mat-icon>
+          </button>
+          <button mat-button (click)="reloadPage()">
+            <mat-icon>close</mat-icon>
+            UNLOAD
+          </button>
         </div>
       </div>
     </div>
