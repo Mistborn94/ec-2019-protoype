@@ -1,4 +1,4 @@
-import { Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
+import { Component, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { EndGameDialogComponent } from './end-game-dialog/end-game-dialog.component';
 import {
@@ -17,8 +17,8 @@ import {
 } from './game-engine-visualiser.interface';
 import ec2019 from 'ec-2019-game-engine';
 import { HttpClient } from '@angular/common/http';
-import { interval, Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CommandPair } from './command-pair';
 import * as bot from './bot/index';
 import { MatSlider } from '@angular/material/slider';
@@ -38,7 +38,8 @@ function flatMap(array: any[]) {
 interface StateFile {
   currentRound: number;
   lavaDamage: number;
-  map: any[];
+  map: any[][];
+  flatMappedCells?: any[];
   mapSize: number;
   maxRounds: number;
   opponents: any[];
@@ -75,7 +76,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
   private replayPause$ = new Subject<void>();
   maxRoundNumber: number = 400;
-  private allRounds: StateFile[];
+  allRounds: StateFile[];
 
   @ViewChild('slider') slider: MatSlider;
 
@@ -416,7 +417,8 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
     let fileReadPromises = stateFiles.map(f =>
       f.stateFile.text().then(result => {
-        let resultParsed = JSON.parse(result);
+        let resultParsed: StateFile = JSON.parse(result);
+        resultParsed.flatMappedCells = flatMap(resultParsed.map);
         this.allRounds[resultParsed.currentRound] = resultParsed;
       }));
 
@@ -427,25 +429,24 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     this.selectedRound = 1;
     this.maxRoundNumber = Object.keys(this.allRounds).length;
 
+    this.gameMap = this.getMapStyle(
+      <GameMap>{size: this.allRounds[1].mapSize},
+      <GameConfig>{
+        websitePixelSize: 650,
+        agentWorms: {bananas: {damageRadius: 5}},
+        technologistWorms: {snowballs: {freezeRadius: 5}},
+      });
     this.startPlayback();
   }
 
   private startPlayback() {
-    let currentState = this.allRounds[this.selectedRound];
-
     this.worms = flatMap(
-      currentState.opponents.map(o => o.worms
+      this.allRounds[this.selectedRound]
+        .opponents.map(o => o.worms
         .map(w => {
           w.player = o;
           return w;
         })));
-
-    this.gameMap = <GameMap>{size: currentState.mapSize};
-    this.gameMap = this.getMapStyle(this.gameMap, <GameConfig>{
-      websitePixelSize: 650,
-      agentWorms: {bananas: {damageRadius: 5}},
-      technologistWorms: {snowballs: {freezeRadius: 5}},
-    });
 
     interval(1500)
       .pipe(takeUntil(this.replayPause$))
@@ -480,7 +481,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
     });
     this.worms = this.worms.filter(w => w.health > 0);
 
-    this.flatCells = flatMap(currentState.map);
+    this.flatCells = currentState.flatMappedCells;
 
     let events = currentState.visualizerEvents;
     if (events.length > 0) {
