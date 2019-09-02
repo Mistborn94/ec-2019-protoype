@@ -125,11 +125,6 @@ export class GameEngineVisualiserComponent implements OnDestroy {
 
         if (commandsBucket.filter(c => !c.command.includes('select')).length === 2) {
           this.gameRunner.processRound(this.gameMap, commandsList);
-          commandsBucket.filter(command => command.type === ActionsEnum.SELECT)
-            .forEach(command => this.gameMap
-              .players.toArray()
-              .find(p => p == command.player)
-              .wormSelectionTokens--);
 
           commandsBucket = [];
           setTimeout(_ => this.nextRound(), 0);
@@ -329,7 +324,7 @@ export class GameEngineVisualiserComponent implements OnDestroy {
         break;
 
       case ActionsEnum.SELECT:
-        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.SELECT} ${cell.x} ${cell.y}`, ActionsEnum.SELECT));
+        this.commandsCollector$.next(new CommandPair(this.player1, `${ActionsEnum.SELECT} ${cell.occupier.id}`, ActionsEnum.SELECT));
         this.player1.currentWorm = cell.occupier;
         this.refreshMap();
         break;
