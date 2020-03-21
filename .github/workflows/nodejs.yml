@@ -29,7 +29,7 @@ jobs:
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
-        SSH: true
+        ACCESS_TOKEN: ${{secrets.ACCESS_KEY}}
         BRANCH: gh-pages # The branch the action should deploy to.
         FOLDER: build
         TARGET_FOLDER: ec-2019-prototype
