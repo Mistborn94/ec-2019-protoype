@@ -27,5 +27,5 @@ jobs:
       with:
         ACCESS_TOKEN: ${{secrets.ACCESS_KEY}}
         BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: dist
-        TARGET_FOLDER: ec-2019-prototype
+        FOLDER: dist/presentable-angular
+#         TARGET_FOLDER: ec-2019-prototype
